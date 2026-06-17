@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>数字能量分析</title>
+<style>
+:root {
+  --bg:#0f0f1a; --card:#1a1a2e; --gold:#d4a853; --gold2:#f0d68a;
+  --text:#e0d6c2; --dim:#8a8578; --border:#2a2a3e; --radius:12px;
+  --green:#5b8c5a; --red:#c0392b; --blue:#3a7ca5; --orange:#d4914a;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.8;
+background-image:radial-gradient(ellipse at 50% 0%,rgba(212,168,83,0.05) 0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(58,124,165,0.04) 0%,transparent 50%)}
+.container{max-width:520px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:28px 0 16px}
+.header .icon{width:60px;height:60px;margin:0 auto 10px;border-radius:50%;background:linear-gradient(135deg,#2a1f0a,#4a3510);display:flex;align-items:center;justify-content:center;font-size:28px;border:1px solid var(--gold)}
+.header h1{font-size:20px;color:var(--gold2);font-weight:600;letter-spacing:2px}
+.header p{font-size:12px;color:var(--dim);margin-top:2px}
+.card{background:var(--card);border-radius:var(--radius);padding:18px;margin-bottom:12px;border:1px solid var(--border);box-shadow:0 4px 24px rgba(0,0,0,0.3)}
+.card h2{font-size:15px;color:var(--gold2);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card h2::before{content:'';width:3px;height:15px;background:var(--gold);border-radius:2px}
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:12px;color:var(--dim);margin-bottom:5px;letter-spacing:1px}
+.fg input,.fg select{width:100%;padding:11px 12px;background:#12121f;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:15px;outline:none;font-family:inherit;transition:border-color .3s}
+.fg input:focus,.fg select:focus{border-color:var(--gold)}
+.fg input::placeholder{color:#4a4558}
+.pi{display:flex;gap:8px;align-items:center}
+.pi span{color:var(--dim);font-size:13px;white-space:nowrap}
+.pi input{flex:1;padding:11px;background:#12121f;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:20px;text-align:center;letter-spacing:6px;outline:none;font-family:inherit;max-width:150px}
+.pi input:focus{border-color:var(--gold)}
+.hint{font-size:10px;color:var(--dim);margin-top:3px}
+.btn{width:100%;padding:13px;background:linear-gradient(135deg,#8b6914,#b8941f);color:#1a1a0a;border:none;border-radius:8px;font-size:16px;font-weight:600;letter-spacing:2px;cursor:pointer;font-family:inherit;transition:all .3s}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:scale(.98)}
+.err{background:rgba(192,57,43,0.15);border:1px solid rgba(192,57,43,0.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#e0554a;margin-bottom:10px;display:none}
+.results{display:none}
+.rcard{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:10px;border:1px solid var(--border)}
+.rcard h3{font-size:14px;margin-bottom:8px;display:flex;align-items:center;gap:8px;justify-content:space-between}
+.rcard h3 .l{display:flex;align-items:center;gap:6px}
+.score{font-size:13px;font-weight:700;padding:2px 10px;border-radius:12px;letter-spacing:1px}
+.s-high{background:rgba(91,140,90,0.2);color:#6bae6a}
+.s-mid{background:rgba(212,145,74,0.2);color:#d4914a}
+.s-low{background:rgba(192,57,43,0.2);color:#e0554a}
+.free-txt{font-size:13px;line-height:1.9;color:var(--text)}
+.free-txt .a{display:block;margin-bottom:4px}
+.free-txt .b{display:block;color:#c5bfb0;font-size:12px;font-style:italic}
+.level-tag{display:inline-block;padding:1px 8px;border-radius:4px;font-size:10px;margin-right:4px}
+.l-good{background:rgba(91,140,90,0.15);color:#6bae6a}
+.l-caution{background:rgba(192,57,43,0.15);color:#e0554a}
+.l-neutral{background:rgba(138,133,120,0.15);color:#a5a08a}
+
+.overview-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.ov-item{background:#12121f;border-radius:8px;padding:10px;text-align:center;border:1px solid var(--border)}
+.ov-item .lbl{font-size:10px;color:var(--dim)}
+.ov-item .val{font-size:24px;font-weight:700;color:var(--gold2);letter-spacing:2px}
+.ov-item .sub{font-size:11px;color:var(--dim);margin-top:1px}
+.bar-wrap{height:6px;background:#1a1a2e;border-radius:3px;margin:6px 0;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .8s ease}
+.b-gold{background:linear-gradient(90deg,#8b6914,var(--gold))}
+.b-blue{background:linear-gradient(90deg,#1a5276,var(--blue))}
+.b-green{background:linear-gradient(90deg,#2d5a2d,var(--green))}
+
+.summary-tags{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.summary-tags span{padding:4px 10px;border-radius:12px;font-size:11px}
+.t-dom{background:rgba(212,168,83,0.15);color:var(--gold2)}
+.t-warn{background:rgba(192,57,43,0.12);color:#e0554a}
+
+/* Paywall */
+.pw{background:linear-gradient(135deg,#1a1a0f,#1f1a0a);border:2px dashed var(--gold);border-radius:var(--radius);padding:22px 18px;text-align:center;margin:18px 0;position:relative}
+.pw::before{content:'🔒';position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:28px;background:var(--bg);padding:0 8px}
+.pw h3{color:var(--gold2);font-size:16px;margin:8px 0 4px}
+.pw .price{font-size:26px;color:var(--gold);font-weight:700;margin:6px 0}
+.pw .price small{font-size:13px}
+.qr-box{width:160px;height:160px;margin:12px auto;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;flex-direction:column;gap:6px;cursor:pointer;overflow:hidden}
+.qr-box img{width:100%;height:100%;object-fit:contain}
+.unlock-row{display:flex;gap:8px;margin-top:10px}
+.unlock-row input{flex:1;padding:9px 10px;background:#12121f;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;text-align:center;outline:none;font-family:inherit}
+.unlock-row input:focus{border-color:var(--gold)}
+.unlock-row button{padding:9px 18px;background:var(--gold);border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.locked{filter:blur(5px);pointer-events:none;user-select:none;opacity:0.35}
+.unlocked{filter:none;pointer-events:auto;user-select:auto;opacity:1}
+.detail-txt{font-size:12px;line-height:2;color:#c5bfb0;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.detail-txt strong{color:var(--gold2)}
+.detail-txt .hl{color:var(--gold);font-weight:600}
+.footer{text-align:center;padding:18px;font-size:10px;color:var(--dim)}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.rcard{animation:up .5s ease forwards}
+.rcard:nth-child(2){animation-delay:.05s}
+.rcard:nth-child(3){animation-delay:.1s}
+.rcard:nth-child(4){animation-delay:.15s}
+.rcard:nth-child(5){animation-delay:.2s}
+.rcard:nth-child(6){animation-delay:.25s}
+.rcard:nth-child(7){animation-delay:.3s}
+.rcard:nth-child(8){animation-delay:.35s}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+  <div class="icon">☯</div>
+  <h1>数字能量分析</h1>
+  <p>手机号后四位 · 多维深度解读</p>
+</div>
+
+<div class="card" id="inputForm">
+  <h2>📱 输入信息</h2>
+  <div class="fg">
+    <label>手机号后四位</label>
+    <div class="pi"><span>*******</span><input type="text" id="phoneDigits" placeholder="0000" maxlength="4" inputmode="numeric"></div>
+    <div class="hint">输入手机号码最后4位数字</div>
+  </div>
+  <div class="fg"><label>使用该号码多长时间</label>
+    <select id="duration"><option value="">请选择</option><option value="0.5">半年以内</option><option value="1">1年</option><option value="2">2年</option><option value="3">3-5年</option><option value="5">5-10年</option><option value="10">10年以上</option></select>
+    <div class="hint">使用越久，磁场影响越大</div>
+  </div>
+  <div class="fg"><label>性别</label><select id="gender"><option value="">请选择</option><option value="male">男</option><option value="female">女</option></select></div>
+  <div class="fg"><label>年龄</label><input type="number" id="age" placeholder="请输入年龄" min="10" max="100"><div class="hint">用于确定当前大运阶段</div></div>
+  <div class="err" id="errorMsg"></div>
+  <button class="btn" id="analyzeBtn">⚡ 开始分析</button>
+  <div id="jsStatus" style="text-align:center;font-size:10px;color:#5b8c5a;margin-top:6px;display:none">✅ 系统就绪</div>
+</div>
+
+<div class="results" id="resultsSection"></div>
+<div class="footer"><p>基于传统数理分析 · 仅供娱乐参考</p><p>不构成任何决策建议</p></div>
+</div>
+
+<script>
+// ============================================================
+// 第一层：数据映射
+// ============================================================
+var E2N = {'1':'金','2':'金','3':'火','4':'木','5':'木','6':'水','7':'土','8':'土','9':'金','0':'土'};
+var N2G = {'1':'乾','2':'兑','3':'离','4':'震','5':'巽','6':'坎','7':'艮','8':'坤','9':'乾','0':'坤'};
+var G2E = {乾:'金',兑:'金',离:'火',震:'木',巽:'木',坎:'水',艮:'土',坤:'土'};
+var G2BODY = {乾:'头部、骨骼、心血管',兑:'呼吸道、牙齿、小骨骼',离:'心脏、眼睛',震:'肝胆、四肢',巽:'神经系统、四肢骨骼',坎:'肾、血液、膀胱、内分泌',艮:'腰背、坐骨神经',坤:'脾胃、腹部'};
+var G2CHAR = {
+  乾:{pos:'强势、主导、讲秩序、执行力强',neg:'控制欲强、过于自我、容易独断',style:'雷厉风行，不喜欢拖泥带水'},
+  兑:{pos:'能说会道、人缘好、表达强',neg:'嘴快伤人、口舌是非多、容易话多误事',style:'善于沟通，靠嘴吃饭的类型'},
+  离:{pos:'外放、热情、反应快、表现力强',neg:'急躁、情绪波动大、容易上头',style:'想到就做，热情来得快去得也快'},
+  震:{pos:'行动快、有魄力、果断',neg:'脾气急、容易冲动、反应过猛',style:'遇到事情第一反应是干，不是等'},
+  巽:{pos:'灵活、善变通、适应力强、擅长策划',neg:'摇摆不定、优柔寡断、容易中途改主意',style:'脑子转得快，计划赶不上变化'},
+  坎:{pos:'聪明、谋略深、会算、格局大',neg:'顾虑多、算计重、容易把自己绕进去',style:'想得比别人多，但有时候想太多反而动不了'},
+  艮:{pos:'稳重、踏实、能守成、有耐心',neg:'固执、慢热、不够灵活、容易僵化',style:'不轻易动，但一旦动了就不会回头'},
+  坤:{pos:'包容、能扛事、耐力强、善解人意',neg:'被动、拖延、容易压抑、不够主动',style:'能撑能扛，但有时候扛太多了忘了自己也需要休息'}
+};
+
+// 大运
+var DAYUN_MAP = [[10,20,'乾','金'],[20,30,'兑','金'],[30,40,'离','火'],[40,50,'震','木'],[50,60,'巽','木'],[60,70,'坎','水'],[70,80,'艮','土'],[80,99,'坤','土']];
+function getDayun(age) {
+  for(var i=0;i<DAYUN_MAP.length;i++) {
+    if(age>=DAYUN_MAP[i][0]&&age<DAYUN_MAP[i][1]) return {name:DAYUN_MAP[i][2],element:DAYUN_MAP[i][3],range:[DAYUN_MAP[i][0],DAYUN_MAP[i][1]]};
+  }
+  return age<10?{name:'乾',element:'金',range:[10,20]}:{name:'坤',element:'土',range:[80,90]};
+}
+
+// 五行生克
+var SHENG = {木:'火',火:'土',土:'金',金:'水',水:'木'};
+var KE = {金:'木',木:'土',土:'水',水:'火',火:'金'};
+function isSheng(a,b){return SHENG[a]===b}
+function isKe(a,b){return KE[a]===b}
+
+// 地支映射 (用于桃花/财库)
+var DZ_MAP = {0:'亥',1:'子',2:'丑',3:'寅',4:'卯',5:'辰',6:'巳',7:'午',8:'未',9:'申'};
+var TAOHUA_SET = {子:1,卯:1,午:1,酉:1};
+var CAIKU_SET = {丑:1,辰:1,未:1,戌:1};
+
+// ============================================================
+// 第二层：计算层
+// ============================================================
+function compute(digits, age, gender, duration) {
+  var d = digits.split('');
+
+  // 五行统计
+  var elemCount = {金:0,木:0,水:0,火:0,土:0};
+  var trigramCount = {};
+  for(var i=0;i<4;i++) {
+    var el = E2N[d[i]];
+    var g = N2G[d[i]];
+    elemCount[el] = (elemCount[el]||0) + 1;
+    trigramCount[g] = (trigramCount[g]||0) + 1;
+  }
+
+  // 主导元素和卦
+  var domElem = '', domCount = 0;
+  for(var e in elemCount) { if(elemCount[e] > domCount) { domElem = e; domCount = elemCount[e]; } }
+  var domTrigrams = [];
+  for(var g in trigramCount) { if(trigramCount[g] >= 2) domTrigrams.push(g); }
+
+  // 平衡分 (元素分布越均匀越高)
+  var balScore = 100;
+  for(var e in elemCount) { if(elemCount[e] >= 3) balScore -= 25; else if(elemCount[e]===0) balScore -= 10; }
+  if(domCount>=4) balScore = 30; // 全同元素
+
+  // 特殊标记
+  var isBaozi = (d[0]===d[1]&&d[1]===d[2]&&d[2]===d[3]);
+  var hasAccident = false;
+  for(var i=0;i<3;i++) {
+    var e1=E2N[d[i]], e2=E2N[d[i+1]];
+    if((e1==='火'&&e2==='金')||(e1==='金'&&e2==='木')) hasAccident = true;
+  }
+
+  // 四宫 (父母/夫妻/自身/子女)
+  var palaces = [
+    {name:'父母宫',digit:d[0],element:E2N[d[0]],trigram:N2G[d[0]],dz:DZ_MAP[d[0]]},
+    {name:'夫妻宫',digit:d[1],element:E2N[d[1]],trigram:N2G[d[1]],dz:DZ_MAP[d[1]]},
+    {name:'自身宫',digit:d[2],element:E2N[d[2]],trigram:N2G[d[2]],dz:DZ_MAP[d[2]]},
+    {name:'子女宫',digit:d[3],element:E2N[d[3]],trigram:N2G[d[3]],dz:DZ_MAP[d[3]]}
+  ];
+  var self = palaces[2];
+
+  // 夫妻宫关系
+  var spRel = '';
+  var spEl = palaces[1].element, selfEl = self.element;
+  if(isKe(spEl, selfEl)) spRel = '克自身';
+  else if(isKe(selfEl, spEl)) spRel = '自身克';
+  else if(isSheng(spEl, selfEl)) spRel = '生自身';
+  else if(isSheng(selfEl, spEl)) spRel = '自身生';
+  else spRel = '比合';
+
+  // 大运
+  var dayun = getDayun(age);
+  var dyRel = '';
+  if(isSheng(dayun.element, selfEl)) dyRel = '生自身';
+  else if(isKe(dayun.element, selfEl)) dyRel = '克自身';
+  else if(isSheng(selfEl, dayun.element)) dyRel = '自身生';
+  else if(isKe(selfEl, dayun.element)) dyRel = '自身克';
+  else dyRel = '比合';
+
+  // 桃花/财库
+  var hasTaohua = false, hasCaiku = false;
+  for(var i=0;i<4;i++) { if(TAOHUA_SET[DZ_MAP[d[i]]]) hasTaohua = true; if(CAIKU_SET[DZ_MAP[d[i]]]) hasCaiku = true; }
+
+  // 连号检测
+  var hasSeq = false;
+  for(var i=0;i<2;i++) { if(Math.abs(parseInt(d[i+1])-parseInt(d[i]))===1) hasSeq = true; }
+
+  // 重复分
+  var repeatScore = 0;
+  var seen={};
+  for(var i=0;i<4;i++) { if(seen[d[i]]) repeatScore+=25; seen[d[i]]=1; }
+
+  return {
+    digits:d, elemCount:elemCount, trigramCount:trigramCount,
+    domElem:domElem, domTrigrams:domTrigrams, balScore:balScore,
+    isBaozi:isBaozi, hasAccident:hasAccident, hasTaohua:hasTaohua, hasCaiku:hasCaiku,
+    hasSeq:hasSeq, repeatScore:repeatScore,
+    palaces:palaces, self:self, spRel:spRel, dayun:dayun, dyRel:dyRel,
+    age:age, gender:gender, duration:duration
+  };
+}
+
+// ============================================================
+// 第三层：评分
+// ============================================================
+function scoreDimension(comp, dim) {
+  var s = 50;
+  var el = comp.elemCount, tg = comp.trigramCount, self = comp.self;
+
+  if(dim === 'career') {
+    if(tg['乾']>=2 || tg['震']>=2) s += 15; // 乾震强：事业主导
+    if(tg['坤']>=2 || tg['艮']>=2) s -= 5;
+    if(comp.dyRel === '比合' || comp.dyRel === '生自身') s += 12;
+    if(comp.dyRel === '克自身') s -= 15;
+    if(comp.dyRel === '自身克') s += 10;
+    if(comp.isBaozi) s += (self.element==='金'||self.element==='火'?8:-5);
+    if(tg['离']>=2) s += 5;
+    if(comp.hasSeq) s += 3;
+  }
+
+  if(dim === 'love') {
+    if(tg['兑']>=2 || tg['离']>=2) s += 15;
+    if(tg['巽']>=1) s += 5;
+    if(comp.hasTaohua) s += 10;
+    if(comp.spRel === '克自身') s -= 12;
+    if(comp.spRel === '生自身') s += 10;
+    if(comp.spRel === '自身生') s -= 5;
+    if(tg['坎']>=2) s -= 5; // 坎多：情绪深、试探多
+    if(el['火']>=3) s -= 5; // 太热容易散
+  }
+
+  if(dim === 'marriage') {
+    if(tg['坤']>=1 || tg['艮']>=1) s += 12;
+    if(el['土']>=1 && el['土']<=2) s += 8;
+    if(comp.spRel === '比合') s += 10;
+    if(comp.spRel === '克自身') s -= 10;
+    if(tg['兑']>=3 || tg['离']>=3) s -= 10;
+    if(tg['乾']>=3 || tg['震']>=3) s -= 5;
+    if(comp.isBaozi && self.element==='火') s -= 8;
+    if(comp.isBaozi && self.element==='土') s += 5;
+  }
+
+  if(dim === 'health') {
+    s = 70;
+    for(var e in el) { if(el[e]>=3) s -= 20; }
+    if(comp.hasAccident) s -= 20;
+    if(comp.balScore >= 70) s += 10;
+    if(el['水']>=3) s -= 8;
+    if(el['火']>=3) s -= 8;
+    if(comp.dyRel === '克自身' || comp.dyRel === '自身生') s -= 5;
+  }
+
+  if(dim === 'personality') {
+    s = 60;
+    if(comp.balScore >= 70) s += 10;
+    if(comp.isBaozi) s -= 15;
+    if(el[self.element]>=3) s -= 10;
+    if(comp.repeatScore > 0) s -= 5;
+    if(tg['乾']>=2) s += 5;
+    if(tg['兑']>=2) s += 3;
+  }
+
+  if(dim === 'wealth') {
+    if(comp.hasCaiku) s += 15;
+    if(comp.dyRel === '自身克') s += 15;
+    if(comp.dyRel === '克自身') s -= 10;
+    if(tg['乾']>=2) s += 5;
+    if(el['水']>=3) s -= 5;
+    if(comp.hasSeq) s += 5;
+  }
+
+  if(dim === 'family') {
+    if(el['土']>=1 && el['土']<=2) s += 10;
+    if(tg['坤']>=1) s += 8;
+    if(comp.spRel === '比合') s += 8;
+    if(comp.spRel === '克自身') s -= 10;
+    if(comp.dyRel === '克自身') s -= 5;
+    if(el['火']>=3) s -= 5;
+  }
+
+  s = Math.max(5, Math.min(98, s));
+  var level = s>=75?'excellent':s>=60?'good':s>=45?'neutral':s>=30?'caution':'warning';
+  return {score:s, level:level};
+}
+
+
+// ============================================================
+// 第四层：模板组合引擎（号码特征注入 + 免费简版 + 付费详版）
+// ============================================================
+
+function elemFeature(comp) {
+  var parts = [], el = comp.elemCount;
+  for(var e in el) { if(el[e]>=2) parts.push(e+'占'+el[e]+'位'); }
+  if(parts.length===0) parts.push('五行分散');
+  return parts;
+}
+function trigramFeature(comp) {
+  var tg = comp.trigramCount, dom = comp.domTrigrams;
+  if(dom.length===0) return '卦象分散，能量不集中';
+  if(dom.length===1) return dom[0]+'卦主导';
+  return dom.join('、')+'卦并重';
+}
+function specialSignals(comp) {
+  var s = [];
+  if(comp.isBaozi) s.push('豹子号');
+  if(comp.hasAccident) s.push('冲撞组合');
+  if(comp.hasSeq) s.push('连号');
+  if(comp.hasTaohua) s.push('桃花入局');
+  if(comp.hasCaiku) s.push('财库在线');
+  return s.length>0 ? s : ['无特殊信号'];
+}
+function dayunBrief(comp) {
+  var d = comp.dayun;
+  var map = {生自身:'大运助你',克自身:'大运压你',自身克:'你克大运·利求财',自身生:'你生大运·付出多',比合:'大运平稳'};
+  return d.name+'卦('+d.range[0]+'-'+d.range[1]+'岁) · '+(map[comp.dyRel]||comp.dyRel);
+}
+
+// ====== 免费版：一句话到位（点到为止） ======
+function freeOneLine(dim, comp, score) {
+  var el = comp.domElem, cnt = comp.elemCount[el];
+  var tg = comp.domTrigrams.length>0 ? comp.domTrigrams[0] : comp.self.trigram;
+  var lv = score.level;
+  var seed = parseInt(comp.digits.join(''),10);
+
+  var pools = {
+    career: {
+      excellent: [
+        el+'性主导('+cnt+'/4位)，执行力+格局在线，不缺往上走的机会。',
+        tg+'卦加持，资源整合力突出——事业进入快车道。',
+        '号码利事业——'+el+'的果断+'+tg+'的格局，平台运走强。'
+      ],
+      good: [
+        el+'占主导，方向对，但节奏把控好——快容易出错。',
+        tg+'卦特征，适合深挖现有岗位，厚积薄发比跳槽强。',
+        '事业稳中向好，'+el+'属性让你做事有章法有底线。'
+      ],
+      neutral: [
+        el+'为主但不集中，过渡期——先观望，别有太大动作。',
+        '能量偏分散，先把手头事做稳，再想下一步。',
+        tg+'卦偏守——当前不打就是赢，稳住饭碗最重要。'
+      ],
+      caution: [
+        el+'过旺('+cnt+'/4)，容易跟人硬碰硬——不是你能力不够，是场不合。',
+        '克耗信号明显，推进有阻力——运势叫你慢一点，你就慢一点。',
+        tg+'卦在大运下承压——先守后攻，别冲动离职或创业。'
+      ],
+      warning: [
+        el+'极强('+cnt+'/4)，冲突感重，干得累还不见效——先稳住。',
+        '号码对事业形成压制——外部条件不配合，熬过这段再说。',
+        tg+'受克严重，压力山大——收缩战线比盲目出击安全。'
+      ]
+    },
+    wealth: {
+      excellent: [
+        '财星在线，'+el+'属性带来赚钱嗅觉——不是死工资命。',
+        tg+'卦利求财，'+el+'掌控力帮钱落袋——但要管住花钱的手。',
+        (comp.hasCaiku?'带财库，蓄财能力强。':'赚钱渠道比一般人多。')
+      ],
+      good: [
+        el+'主财，收入稳定，适合长期积累型理财。',
+        '财运OK，'+tg+'卦带来资源整合型收入机会——别贪快钱。',
+        '不是暴富命，但细水长流稳得住——积少成多型。'
+      ],
+      neutral: [
+        '财运平稳，'+el+'属性偏刚性支出——大额消费先缓缓。',
+        '当前进账不快，'+tg+'卦提示：守住本金比追求收益重要。'
+      ],
+      caution: [
+        el+'过重('+cnt+'/4)，花钱口子比赚钱渠道多——节流是头等大事。',
+        '财运偏紧，'+tg+'卦下不宜冒险投资——保守为上，现金为王。'
+      ],
+      warning: [
+        el+'极强致财路受阻——谨慎借钱、担保、冲动消费。',
+        '财星受制——现在不是赚钱的时候，是守住老本的时候。'
+      ]
+    },
+    love: {
+      excellent: [
+        tg+'卦桃花在线，'+el+'属性让你在人群里容易被注意到。',
+        '异性缘出挑，'+el+'吸引力+'+tg+'表达力——想单身都难。',
+        (comp.hasTaohua?'桃花活跃，':'')+'号码对感情助力明显——关键在选对人。'
+      ],
+      good: [
+        '感情运OK，'+el+'属性帮你筛掉不靠谱的人——质量比数量重要。',
+        tg+'卦在感情上偏'+(comp.spRel==='生自身'?'被照顾的一方':'主动的一方')+'——把握节奏就好。',
+        '有机会但不会扑面而来——需要你主动走出去，宅着不行。'
+      ],
+      neutral: [
+        el+'性偏稳，感情运势中等——顺其自然，该来的会来。',
+        tg+'卦下感情不热不冷——单身的话需要自己创造接触机会。'
+      ],
+      caution: [
+        comp.spRel==='克自身'?'夫妻宫受克——关系容易有摩擦，冷处理是最大的坑。':'感情路不太顺，'+el+'属性让双方各执己见。',
+        tg+'卦感情上容易"卡住"——不是不在乎，是话到嘴边说不出口。'
+      ],
+      warning: [
+        comp.spRel==='克自身'?'夫妻宫严重受克——沟通是硬伤，冷战比吵架更毁关系。':'感情运走低，'+el+'过强让关系紧绷——先理顺自己。',
+        tg+'卦的'+el+'属性太强，感情容易被情绪牵着走——冷静时再沟通。'
+      ]
+    },
+    marriage: {
+      excellent: [
+        '婚姻基础稳，'+tg+'卦+'+el+'属性是"能过日子"的组合。',
+        '号码对婚姻有利——'+el+'责任感+'+tg+'稳定性，家能经营好。'
+      ],
+      good: [
+        '婚姻整体向好，'+el+'属性让家里有秩序，'+tg+'让关系有温度。',
+        '适合先磨合再落地——不着急定，但定了就稳得住。'
+      ],
+      neutral: [
+        '婚姻偏现实路线，两人更像搭档——需要主动加点浪漫。',
+        tg+'卦下婚姻稳定但不甜——仪式感这东西别省。'
+      ],
+      caution: [
+        comp.spRel==='克自身'?'婚姻里容易冷战——有些事拖久了就不是小事了。':'婚姻承压，'+el+'过强让两人较劲——谁对谁错没那么重要。',
+        tg+'卦提示：磨合成本偏高，不是不能过，是需要互相让一步。'
+      ],
+      warning: [
+        comp.spRel==='克自身'?'婚姻宫严重受压——外力(钱、工作、家庭)容易冲击。':'婚姻运走低，'+el+'极旺让家像高压锅——需要一个出口。',
+        tg+'卦的'+el+'属性太刚——婚姻需要柔，不是战场。'
+      ]
+    },
+    health: {
+      excellent: [el+'属性均衡，健康基础不错——继续保持，别挥霍身体。'],
+      good: [el+'为主，多留意'+G2BODY[tg]+'的保养——别等不舒服才重视。'],
+      neutral: ['关注'+G2BODY[tg]+'——现在没问题，但属于"容易出状况"的部位。'],
+      caution: [el+'过旺('+cnt+'/4)，'+G2BODY[tg]+'容易透支——累了就歇，别硬扛。'+(comp.hasAccident?' ⚠出行安全第一。':'')],
+      warning: [el+'极强，'+G2BODY[tg]+'是薄弱环节——定期检查不能省。'+(comp.hasAccident?' ⚠冲撞信号，驾车出行多加小心。':'')]
+    },
+    personality: {
+      excellent: [G2CHAR[tg].pos.split('、').slice(0,2).join('、')+'——能收能放，分寸感好。'],
+      good: [G2CHAR[tg].pos.split('、')[0]+'，'+G2CHAR[tg].style],
+      neutral: ['偏'+el+'性——'+G2CHAR[tg].pos.split('、')[0]+'，有时会'+G2CHAR[tg].neg.split('、')[0]+'。'],
+      caution: [el+'过强('+cnt+'/4)，'+G2CHAR[tg].neg.split('、')[0]+'——身边需要能说真话的人。'],
+      warning: ['极端'+el+'性：'+G2CHAR[tg].neg+'——双刃剑，'+(comp.isBaozi?'豹子号让一切更极致。':'需要自我觉察。')]
+    },
+    family: {
+      excellent: [el+'属性让家有条理，'+tg+'卦提示长辈是你后盾——珍惜。'],
+      good: ['家庭整体和谐，'+el+'让你在家有分量，'+tg+'让关系不走偏。'],
+      neutral: ['家庭平稳，交流偏少但没啥大矛盾——有空多回家吃顿饭。'],
+      caution: ['家里琐事变多，'+el+'过旺容易跟长辈较劲——说话注意方式。'],
+      warning: [el+'极强，家庭关系容易紧绷——你是那个能带头降温的人。']
+    }
+  };
+
+  var pool = (pools[dim]||pools.career)[lv] || pools[dim].neutral;
+  return pool[seed % pool.length];
+}
+
+// ====== 付费版：详细组合拼装 ======
+function composeDetail(dim, comp, score) {
+  var el = comp.domElem, cnt = comp.elemCount[el];
+  var tg = comp.domTrigrams.length>0 ? comp.domTrigrams[0] : comp.self.trigram;
+  var parts = [];
+
+  parts.push('<strong>号码特征：</strong>'+elemFeature(comp).join('，')+'。'+trigramFeature(comp)+'。'+dayunBrief(comp)+'。<br><br>');
+
+  if(dim==='career') {
+    parts.push('<strong>事业趋势详析</strong><br>');
+    if(comp.trigramCount['乾']>=2||comp.trigramCount['震']>=2) parts.push('乾/震卦强旺，天生带管理和执行基因——适合带团队、抓项目、做决策型岗位。在组织架构里往上走是自然路径。');
+    else if(comp.trigramCount['离']>=2) parts.push('离卦突出，适合曝光型、表现型工作——台前比幕后更适合你。多展示自己比埋头做事回报高。');
+    else if(comp.trigramCount['巽']>=2) parts.push('巽卦主导，灵活善变是你的优势——适合策划、传播、技术、跨领域工作。注意：灵活过头就是摇摆，大方向定了别轻易改。');
+    else if(comp.trigramCount['坤']>=2||comp.trigramCount['艮']>=2) parts.push('坤/艮卦偏稳——不是爆冲型，但后劲足。适合后勤、管理、积累型岗位，不争一时快慢。');
+    else if(comp.trigramCount['坎']>=2) parts.push('坎卦偏深，适合需要谋略和思考的工作——研究、分析、策略型岗位。表面不动声色，心里门清。');
+    else parts.push('卦象分散，适合多面手发展——不局限一个领域，跨界反而是你的优势。');
+    parts.push('<br><br>');
+    if(comp.dyRel==='克自身') { parts.push('<strong>当前大运('+comp.dayun.name+'卦)：</strong>外部约束感明显——规矩多、考核多、上级盯得紧。但如果在体制内或大公司，这反而是"被推着往上走"的阶段——规则帮你建立秩序。自由职业者要多留后路。<br>'); }
+    else if(comp.dyRel==='自身克') { parts.push('<strong>当前大运('+comp.dayun.name+'卦)：</strong>你对环境掌控力强——适合冲业绩、谈合作、拓展新业务。但节奏太快容易出错，大事多确认一遍再动手。<br>'); }
+    else if(comp.dyRel==='自身生') { parts.push('<strong>当前大运('+comp.dayun.name+'卦)：</strong>你付出多，但回报还没到位——"种地期"不是"收获期"。最容易犯的错误是短期看不到成果就换方向。把根扎深，后面才起得来。<br>'); }
+    else if(comp.dyRel==='生自身') { parts.push('<strong>当前大运('+comp.dayun.name+'卦)：</strong>贵人在场——关键时刻有人愿意拉你一把。多出去走动、多见人、多展示实力。贵人不一定会主动找你，你得先让人看到你。<br>'); }
+    else { parts.push('<strong>当前大运('+comp.dayun.name+'卦)：</strong>运势平稳期。把现有的事做深做透比开拓新方向性价比高。不折腾就是最好的策略。<br>'); }
+  }
+
+  if(dim==='wealth') {
+    parts.push('<strong>财运分析</strong><br>');
+    parts.push(comp.hasCaiku?'号码带财库——你有存钱底子，钱不容易流走。这是很多人没有的天赋。':'财库不显——容易钱到手就花。不是你大手大脚，是号码少了一个"守"的能量。建议：工资到账先转一笔到另一个账户。');
+    parts.push('<br><br>');
+    parts.push('财星偏向'+el+'，'+(comp.elemCount[el]>=3?'财星过旺——手里流水大，真正沉淀的少。典型的赚得多、花得也多。':(comp.elemCount[el]>=2?'财星在线，赚钱嗅觉不错——比一般人更能发现来钱的路子。':'财星偏弱，但不代表赚不到钱——财富更多靠积累，不是靠风口。')));
+    parts.push('<br><br>');
+    if(comp.dyRel==='自身克') parts.push('<strong>当前大运：</strong>三年里财运最亮的一段。适合冲收入、谈合作、做副业。能进财——但花销也大。手里流水大，现金沉淀一般。');
+    else if(comp.dyRel==='克自身') parts.push('<strong>当前大运：</strong>财路偏紧——不是没收入，是支出跟着涨。守住现金流就是守住财。');
+    else parts.push('<strong>当前大运：</strong>财运平稳——保持节奏就好，今年不是爆发年但也不会差。');
+    parts.push('<br><br><strong>建议：</strong>'+(comp.hasCaiku?'养成记账习惯，看着存款涨会有踏实感。投资方面'+(score.score>=65?'可适当激进但要设止损线。':'稳健为主，别碰不熟的领域。'):'强制储蓄是第一要务——自动转存比意志力管用一百倍。'));
+  }
+
+  if(dim==='love') {
+    parts.push('<strong>感情趋势详析</strong><br>');
+    parts.push(comp.hasTaohua?'号码带桃花——身边不乏异性缘。但桃花多不代表质量高：学会筛选比学会吸引更重要。':'桃花不算旺，但胜在稳定——来的人不会是烂桃花，质量比数量重要。');
+    parts.push('<br><br>');
+    if(comp.spRel==='克自身') { parts.push('<strong>关系模式：</strong>夫妻宫克你——关系中容易感觉被压制。你不是没道理，是懒得争。但长期忍让会积累怨恨。建议设立"沟通底线"——什么事能忍、什么事不能忍，想清楚别等爆了再说。<br>'); }
+    else if(comp.spRel==='自身克') { parts.push('<strong>关系模式：</strong>你克夫妻宫——关系节奏由你掌控。好处是你说了算，风险是对方在心里默默记分。偶尔示弱、让对方做决定，效果比你想的好——不是没主见，是给对方面子。<br>'); }
+    else if(comp.spRel==='生自身') { parts.push('<strong>关系模式：</strong>夫妻宫生你——对方对你有滋养作用。低谷时能撑你一把。记住：别把好当成理所当然。感恩不是嘴上说谢谢，是让对方也觉得被在乎。<br>'); }
+    else if(comp.spRel==='自身生') { parts.push('<strong>关系模式：</strong>你生夫妻宫——付出型选手，对关系很上心。但付出型最容易受伤，因为你给了很多期待自然也高。偶尔收一收，让对方也主动一下。<br>'); }
+    else { parts.push('<strong>关系模式：</strong>夫妻宫比合——两人节奏差不多，平等自在。但"太像"也有风险：谁也不服谁时小事吵成大仗。你们是搭档不是对手。<br>'); }
+    parts.push('<strong>建议：</strong>'+(comp.gender==='male'?(comp.spRel==='自身克'?'你习惯主导，偶尔退一步让对方做决定——不是示弱，是智慧。':comp.spRel==='克自身'?'别把工作上的强势带回家——在家你是丈夫不是老板。':'保持仪式感——纪念日别省略，小事在她心里是大事。'):(comp.spRel==='克自身'?'冷战最伤感情——谁先开口不代表谁输了，反而说明谁更在乎。':comp.spRel==='自身生'?'别把全部心思放别人身上——留一点给自己，你也需要被关心的。':'对方对你好记得说谢谢——不是客气，是让他知道你看得见。')));
+  }
+
+  if(dim==='marriage') {
+    parts.push('<strong>婚姻走势详析</strong><br>');
+    parts.push((comp.trigramCount['坤']>=1||comp.trigramCount['艮']>=1)?'坤/艮卦在线，婚姻基础偏稳——你有把日子过长的能力。但别把稳定过成无聊。':(comp.trigramCount['离']>=3||comp.trigramCount['兑']>=3?'离/兑过旺，婚姻容易"热得快冷得也快"——刚开始甜度高，维持需要功夫。':'婚姻需用心经营——号码没天然优势也没硬伤。好婚姻靠后天磨合，不靠先天匹配。'));
+    parts.push('<br><br>');
+    parts.push('<strong>长期课题：</strong>'+(comp.spRel==='克自身'?'一方长期忍让总爆发——建议建立吵架规则：不过夜、不翻旧账、不人身攻击。有规则地吵比闷着好一万倍。':
+               comp.spRel==='自身克'?'你主导的模式让对方可能感觉被忽略。偶尔退一步、让对方做决定——面子在婚姻里就是温度。':
+               comp.spRel==='自身生'?'你扛了很多家庭责任——辛苦了。家不是你一个人的战场。让对方进入你的"责任区"，不是甩锅是让他/她有参与感。':
+               '关系比较平等——但也容易因为"太像"一起钻牛角尖。偶尔站对方角度看一眼，很多争吵其实不值得。'));
+    parts.push('<br><br>');
+    if(comp.gender==='male') parts.push('<strong>给丈夫：</strong>家里温度比效率重要。多问一句"你觉得呢"、多听对方的废话——不是浪费时间，是存感情。'); else parts.push('<strong>给妻子：</strong>你扛的不比任何人少。偶尔让对方看到你的脆弱——坚强是铠甲但不是全部。');
+  }
+
+  if(dim==='health') {
+    parts.push('<strong>健康风险详析</strong><br>');
+    parts.push('<strong>核心关注：</strong>'+G2BODY[tg]+'。<br><br>');
+    if(comp.hasAccident) parts.push('<strong>⚠ 安全警示：</strong>号码含冲撞组合（火克金/金克木）。出行、驾车、运动时多加小心——不是吓你，是多一份谨慎。避免高危活动。<br><br>');
+    parts.push('<strong>各宫对应部位：</strong><br>');
+    for(var i=0;i<comp.palaces.length;i++) {
+      parts.push('· '+comp.palaces[i].name+'（数字'+comp.palaces[i].digit+'）→ '+G2BODY[comp.palaces[i].trigram]+'<br>');
+    }
+    parts.push('<br>');
+    var hw = [];
+    if(comp.elemCount['火']>=3) hw.push('火过旺→易上火、失眠、急躁、心血管负担。建议：规律作息、少熬夜。');
+    if(comp.elemCount['水']>=3) hw.push('水过旺→易寒湿、腰肾负担、内分泌波动。建议：少喝冰的、注意保暖。');
+    if(comp.elemCount['金']>=3) hw.push('金过旺→易呼吸道不适、骨骼关节紧张。建议：多拉伸、注意空气质量。');
+    if(comp.elemCount['木']>=3) hw.push('木过旺→易肝胆负担、神经紧张。建议：少喝酒、学会主动放松。');
+    if(comp.elemCount['土']>=3) hw.push('土过旺→易脾胃不佳、消化问题。建议：饮食清淡、细嚼慢咽。');
+    if(hw.length) parts.push('<strong>元素过旺提醒：</strong><br>'+hw.join('<br>')+'<br><br>');
+    parts.push('<strong>忠告：</strong>'+(comp.balScore<40?'号码极度不平衡——身体是最大本钱。累了就歇、饿了就吃——简单但你可能常忽略。':'定期体检+规律作息比保健品管用。小毛病别拖，拖久了都大问题。'));
+  }
+
+  if(dim==='personality') {
+    var ch = G2CHAR[tg];
+    parts.push('<strong>性格深度画像</strong><br>');
+    parts.push('<strong>核心底色：</strong>'+tg+'卦性格——'+ch.pos+'。<br><br>');
+    parts.push('<strong>行事风格：</strong>'+ch.style+'<br><br>');
+    parts.push('<strong>优势来源：</strong>'+ch.pos+'——让你在人群中不容易被忽视。<br><br>');
+    parts.push('<strong>成长空间：</strong>'+ch.neg+'——不是缺点，是"过度使用优势"的副作用。关键不是改本性，是知道什么时候收。<br><br>');
+    if(comp.isBaozi) parts.push('<strong>豹子号影响：</strong>四位相同数字放大以上所有特质——好的更好，需警惕的更明显。身边留一个敢当面说"不"的人，比十个夸你的人都有用。<br><br>');
+    parts.push('<strong>人际建议：</strong>'+((comp.spRel==='克自身'||comp.dyRel==='克自身')?'你容易委屈自己换和谐——但适当说"不"，别人反而更尊重你。':(comp.spRel==='自身克'||comp.dyRel==='自身克')?'掌控力是优势，但别让它变压迫感。偶尔收敛反而让人更服你。':'保持自己节奏就好——你不需要变成别人喜欢的样子。'));
+  }
+
+  if(dim==='family') {
+    parts.push('<strong>家庭关系详析</strong><br>');
+    parts.push('<strong>长辈/父母：</strong>');
+    parts.push(comp.elemCount['土']>=2?'土元素稳重，家庭根基不错——长辈是你后盾。但别把这份支持当理所当然——主动打电话、回家吃饭，小事在他们心里很重。<br><br>':'家庭关系需主动维护——定期联系、回家看看、节日问候。亲情越走越近，不走就远了。<br><br>');
+    parts.push('<strong>子女/晚辈：</strong>');
+    if(comp.trigramCount['巽']>=1) parts.push('孩子可能较灵活、有创意——需要你给空间，不是给框架。少说"你应该"，多问"你怎么想"。');
+    else if(comp.trigramCount['乾']>=2||comp.trigramCount['震']>=2) parts.push('孩子偏独立、有主见——不用太操心，但沟通上需要你更主动。多创造轻松相处场景比严肃谈心效果好。');
+    else parts.push('孩子的事顺其自然就好——过度操心你累孩子也累。陪伴质量比数量重要——在一起时放下手机专心听。');
+  }
+
+  return parts.join('');
+}
+
+// ====== 报告生成 ======
+function generateReport(comp) {
+  var seedBase = parseInt(comp.digits.join(''),10);
+  var dims = ['personality','career','wealth','love','marriage','health','family'];
+  var labels = {personality:'性格特质',career:'事业运势',wealth:'财运分析',love:'感情运势',marriage:'婚姻分析',health:'健康提示',family:'家庭关系'};
+  var emojis = {personality:'🧠',career:'💼',wealth:'💰',love:'💕',marriage:'💍',health:'🏥',family:'👨‍👩‍👧'};
+
+  var report = {};
+  for(var i=0;i<dims.length;i++) {
+    var d = dims[i];
+    var sc = scoreDimension(comp, d);
+    report[d] = {score:sc.score, level:sc.level, free:freeOneLine(d, comp, sc), label:labels[d], emoji:emojis[d]};
+  }
+
+  var totalScore = 0;
+  for(var i=0;i<dims.length;i++) { totalScore += report[dims[i]].score; }
+  var avgScore = Math.round(totalScore/dims.length);
+  var overall = avgScore >= 65 ? '偏吉' : avgScore >= 45 ? '平' : '偏凶';
+
+  var domElements = [comp.domElem];
+  for(var e in comp.elemCount) { if(comp.elemCount[e]>=2 && e!==comp.domElem) domElements.push(e); }
+
+  var summary = {
+    overall: overall, avgScore: avgScore,
+    domElements: domElements, domTrigrams: comp.domTrigrams,
+    signals: specialSignals(comp),
+    dayunLine: dayunBrief(comp),
+    elemFeature: elemFeature(comp).join('，'),
+    trigramFeature: trigramFeature(comp),
+    warnings: []
+  };
+  if(comp.hasAccident) summary.warnings.push('号码含冲撞组合，注意出行安全');
+  if(comp.isBaozi) summary.warnings.push('豹子号磁场极强，个性容易走极端');
+  if(comp.dyRel==='克自身') summary.warnings.push('当前大运压你，宜稳守不宜冒进');
+  if(!comp.hasCaiku) summary.warnings.push('财库不显，注意理财规划');
+
+  return {report:report, summary:summary, comp:comp};
+}
+
+// ====== UI渲染 ======
+function levelClass(l) {
+  if(l==='excellent'||l==='good') return 's-high';
+  if(l==='neutral') return 's-mid';
+  return 's-low';
+}
+function levelName(l) {
+  var m = {excellent:'优',good:'良',neutral:'平',caution:'注意',warning:'⚠'};
+  return m[l]||'平';
+}
+function showError(msg) {
+  var el = document.getElementById('errorMsg');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+function startAnalysis() {
+  try {
+    var digitsStr = document.getElementById('phoneDigits').value.trim();
+    var duration = document.getElementById('duration').value;
+    var gender = document.getElementById('gender').value;
+    var ageStr = document.getElementById('age').value;
+    var age = parseInt(ageStr);
+
+    if(!/^\d{4}$/.test(digitsStr)) { showError('请输入4位数字的手机号后四位'); return; }
+    if(!duration) { showError('请选择使用时长'); return; }
+    if(!gender) { showError('请选择性别'); return; }
+    if(!ageStr||isNaN(age)||age<10||age>100) { showError('请输入有效年龄（10-100岁）'); return; }
+
+    try { isUnlocked = localStorage.getItem('np_unlocked')==='true'; } catch(e){ isUnlocked = false; }
+
+    var comp = compute(digitsStr, age, gender, parseFloat(duration));
+    var gen = generateReport(comp);
+    currentData = gen;
+
+    renderResults(gen);
+    document.getElementById('resultsSection').style.display = 'block';
+    document.getElementById('resultsSection').scrollIntoView({behavior:'smooth'});
+  } catch(e) {
+    showError('分析出错: ' + e.message);
+    console.error(e);
+  }
+}
+
+function renderResults(gen) {
+  var r = gen.report, s = gen.summary, c = gen.comp;
+  var dims = ['personality','career','wealth','love','marriage','health','family'];
+  var html = '';
+
+  // 号码总览
+  html += '<div class="rcard"><h3><span>📊</span> 号码总览</h3>';
+  html += '<div class="overview-grid">';
+  for(var i=0;i<4;i++) {
+    html += '<div class="ov-item"><div class="lbl">'+c.palaces[i].name+'</div><div class="val">'+c.palaces[i].digit+'</div><div class="sub">'+c.palaces[i].element+' · '+c.palaces[i].trigram+'卦</div></div>';
+  }
+  html += '</div>';
+  html += '<div class="summary-tags">';
+  html += '<span class="t-dom">主导：'+c.domElem+'</span>';
+  html += '<span>大运：'+c.dayun.name+'卦（'+c.dayun.range[0]+'-'+c.dayun.range[1]+'岁）</span>';
+  if(c.isBaozi) html += '<span class="t-warn">豹子号</span>';
+  if(c.hasAccident) html += '<span class="t-warn">冲撞组合</span>';
+  if(c.hasTaohua) html += '<span class="t-dom">桃花</span>';
+  if(c.hasCaiku) html += '<span class="t-dom">财库</span>';
+  html += '</div>';
+  html += '<div style="font-size:11px;color:var(--dim);">综合：<b style="color:var(--gold2)">'+s.avgScore+'分</b> · '+s.overall+' · '+s.elemFeature+'</div>';
+  html += '</div>';
+
+  // 免费维度（一句话）
+  for(var i=0;i<dims.length;i++) {
+    var d = dims[i], item = r[d];
+    html += '<div class="rcard"><h3>';
+    html += '<span class="l">'+item.emoji+' '+item.label+'</span>';
+    html += '<span class="score '+levelClass(item.level)+'">'+item.score+'分</span>';
+    html += '</h3>';
+    html += '<div class="free-txt"><span class="a">'+item.free+'</span></div>';
+    html += '</div>';
+  }
+
+  // 总结
+  html += '<div class="rcard" style="border-left:3px solid var(--gold);"><h3><span class="l">📋 综合总结</span></h3>';
+  html += '<div class="free-txt"><span class="a">整体：<b>'+s.overall+'</b>（'+s.avgScore+'分）。'+s.elemFeature+'。'+s.trigramFeature+'。</span>';
+  if(s.warnings.length>0) {
+    html += '<span class="a" style="margin-top:6px;">⚠ '+s.warnings.join('；')+'。</span>';
+  }
+  html += '</div></div>';
+
+  // 付费墙
+  html += '<div class="pw" id="paywall"><h3>🔓 解锁详细深度报告</h3>';
+  html += '<p style="font-size:11px;color:var(--dim);line-height:1.8;">以上为简要分析（点到为止），解锁后查看：</p>';
+  html += '<p style="font-size:10px;line-height:1.7;text-align:left;padding:0 16px;color:var(--dim);">';
+  html += '✅ 每个维度的深度解读与具体建议<br>';
+  html += '✅ 号码五行结构与卦象的详细拆解<br>';
+  html += '✅ 大运匹配度分析与进退时机<br>';
+  html += '✅ 当前阶段的个性化风险提示<br>';
+  html += '✅ 各维度针对性的行动建议</p>';
+  html += '<div class="price">¥9.9 <small>/ 次</small></div>';
+  html += '<div class="qr-box" id="qrBox"><span id="qrText">点击上传<br>微信收款码</span><img id="qrImg" style="display:none" alt="收款码"></div>';
+  html += '<input type="file" id="qrUpload" accept="image/*" style="display:none">';
+  html += '<p style="font-size:10px;color:var(--dim);">支付后截图发送客服获取解锁码</p>';
+  html += '<div class="unlock-row"><input type="text" id="unlockCode" placeholder="输入解锁码" maxlength="20"><button id="unlockBtn">解锁</button></div>';
+  html += '<p style="font-size:9px;color:var(--dim);margin-top:6px;">演示解锁码：<b>8888</b></p></div>';
+
+  // 详细报告
+  html += '<div id="detailSection" class="'+(isUnlocked?'unlocked':'locked')+'">';
+  for(var i=0;i<dims.length;i++) {
+    var d = dims[i], item = r[d];
+    html += '<div class="rcard"><h3><span class="l">'+item.emoji+' '+item.label+' <span style="font-size:10px;color:var(--gold)">【深度】</span></span>';
+    html += '<span class="score '+levelClass(item.level)+'">'+item.score+'分</span></h3>';
+    html += '<div class="detail-txt">'+composeDetail(d, c, item)+'</div></div>';
+  }
+  // 深度总结
+  html += '<div class="rcard" style="border-left:3px solid var(--gold);"><h3><span class="l">📋 深度总结</span></h3>';
+  html += '<div class="detail-txt">';
+  html += '<strong>整体评估：</strong>'+s.overall+'（综合'+s.avgScore+'分）。<br><br>';
+  html += '<strong>号码能量特征：</strong>'+s.elemFeature+'。'+s.trigramFeature+'。<br><br>';
+  html += '<strong>当前大运：</strong>'+s.dayunLine+'。<br><br>';
+  if(s.warnings.length > 0) html += '<strong>⚠ 重点关注：</strong>'+s.warnings.join('；')+'。<br><br>';
+  html += '<strong>一句话建议：</strong>'+(s.avgScore>=65?'当前适合主动出击，抓住机会往上走。号码给了助力，别浪费。':'当前适合稳扎稳打。号码不是枷锁——了解它，善用它，但不能依赖它。');
+  html += '</div></div>';
+  html += '</div>';
+
+  document.getElementById('resultsSection').innerHTML = html;
+  if(isUnlocked) {
+    var pw = document.getElementById('paywall');
+    if(pw) pw.style.display = 'none';
+  }
+}
+
+// ====== 事件 & 工具 ======
+var isUnlocked = false;
+var currentData = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+  var jsStatus = document.getElementById('jsStatus');
+  if(jsStatus) jsStatus.style.display = 'block';
+
+  try { isUnlocked = localStorage.getItem('np_unlocked')==='true'; } catch(e){}
+
+  var btn = document.getElementById('analyzeBtn');
+  if(btn) btn.addEventListener('click', startAnalysis);
+
+  var phoneInput = document.getElementById('phoneDigits');
+  if(phoneInput) {
+    phoneInput.addEventListener('input', function() {
+      this.value = this.value.replace(/[^0-9]/g,'').slice(0,4);
+    });
+  }
+
+  var rs = document.getElementById('resultsSection');
+  rs.addEventListener('click', function(e) {
+    if(e.target.closest('#qrBox')) {
+      var upload = document.getElementById('qrUpload');
+      if(upload) upload.click();
+    }
+    if(e.target.closest('#unlockBtn')) { unlockReport(); }
+  });
+  rs.addEventListener('change', function(e) {
+    if(e.target.id === 'qrUpload') { handleQRUpload(e); }
+  });
+});
+
+function handleQRUpload(event) {
+  var file = event.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = document.getElementById('qrImg');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    document.getElementById('qrText').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function unlockReport() {
+  var code = document.getElementById('unlockCode').value.trim();
+  var validCodes = ['8888','2026','6688'];
+  if(validCodes.indexOf(code) >= 0) {
+    isUnlocked = true;
+    try { localStorage.setItem('np_unlocked','true'); } catch(e){}
+    var pw = document.getElementById('paywall');
+    if(pw) pw.style.display = 'none';
+    var ds = document.getElementById('detailSection');
+    if(ds) { ds.classList.remove('locked'); ds.classList.add('unlocked'); }
+  } else {
+    alert('解锁码错误，请确认后重试。\n演示码：8888');
+  }
+}
+
+window.onerror = function(msg, url, line) {
+  var el = document.getElementById('errorMsg');
+  el.innerHTML = '⚠ 系统错误: ' + msg + '<br>行: ' + line;
+  el.style.display = 'block';
+  el.style.background = 'rgba(192,57,43,0.8)';
+  el.style.color = '#fff';
+  el.style.padding = '12px';
+  el.style.borderRadius = '8px';
+  return false;
+};
+</script>
+</body>
+</html>
