@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>数字人格分析</title>
+<style>
+:root{--bg:#0a0a14;--card:#121222;--gold:#c9a040;--gold2:#e8d080;--text:#d8d0c0;--dim:#888478;--border:#222240;--r:12px;--green:#5a9a5a;--red:#c04040;--blue:#4080b0}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.8;
+background-image:radial-gradient(ellipse at 30% 0%,rgba(201,160,64,0.05) 0%,transparent 50%),radial-gradient(ellipse at 70% 100%,rgba(64,128,176,0.04) 0%,transparent 50%)}
+.ct{max-width:520px;margin:0 auto;padding:16px}
+.hd{text-align:center;padding:24px 0 14px}
+.hd .ic{width:56px;height:56px;margin:0 auto 8px;border-radius:50%;background:linear-gradient(135deg,#2a1a08,#4a3008);display:flex;align-items:center;justify-content:center;font-size:26px;border:1px solid var(--gold)}
+.hd h1{font-size:19px;color:var(--gold2);font-weight:600;letter-spacing:2px}
+.hd p{font-size:11px;color:var(--dim)}
+.cd{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:10px;border:1px solid var(--border);box-shadow:0 4px 20px rgba(0,0,0,0.3)}
+.cd h2{font-size:14px;color:var(--gold2);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.cd h2::before{content:'';width:2px;height:14px;background:var(--gold);border-radius:1px}
+.fg{margin-bottom:10px}
+.fg label{display:block;font-size:11px;color:var(--dim);margin-bottom:4px}
+.fg input,.fg select{width:100%;padding:10px 11px;background:#0c0c1a;border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:14px;outline:none;font-family:inherit}
+.fg input:focus,.fg select:focus{border-color:var(--gold)}
+.pi{display:flex;gap:6px;align-items:center}
+.pi span{color:var(--dim);font-size:12px}
+.pi input{flex:1;padding:10px;background:#0c0c1a;border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:19px;text-align:center;letter-spacing:5px;outline:none;max-width:140px;font-family:inherit}
+.pi input:focus{border-color:var(--gold)}
+.btn{width:100%;padding:12px;background:linear-gradient(135deg,#7a5a10,#b08020);color:#1a1a0a;border:none;border-radius:7px;font-size:15px;font-weight:600;letter-spacing:2px;cursor:pointer;font-family:inherit}
+.btn:active{transform:scale(.97)}
+.err{background:rgba(192,64,64,0.15);border:1px solid rgba(192,64,64,0.3);border-radius:7px;padding:9px 12px;font-size:11px;color:#e06060;margin-bottom:8px;display:none}
+.results{display:none}
+.rc{background:var(--card);border-radius:var(--r);padding:15px;margin-bottom:8px;border:1px solid var(--border)}
+.rc h3{font-size:13px;margin-bottom:6px;display:flex;align-items:center;gap:6px;justify-content:space-between}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px}
+.tg{background:rgba(201,160,64,0.15);color:var(--gold2)}
+.tw{background:rgba(192,64,64,0.12);color:#e06060}
+.tb{background:rgba(64,128,176,0.15);color:#80b8e0}
+.pname{font-size:22px;font-weight:700;color:var(--gold2);text-align:center;margin:6px 0 2px;letter-spacing:1px}
+.psub{font-size:11px;color:var(--dim);text-align:center;margin-bottom:10px}
+.pks{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0}
+.pks span{padding:5px 14px;border-radius:16px;font-size:12px;background:rgba(201,160,64,0.12);color:var(--gold2);border:1px solid rgba(201,160,64,0.2)}
+.radar-wrap{width:200px;height:200px;margin:10px auto;position:relative}
+.radar-wrap canvas{width:100%;height:100%}
+.comments{font-size:12px;color:var(--dim);line-height:2}
+.comments li{margin-left:16px;margin-bottom:2px}
+.pw{background:linear-gradient(135deg,#141408,#1a1808);border:2px dashed var(--gold);border-radius:var(--r);padding:20px 16px;text-align:center;margin:14px 0;position:relative}
+.pw::before{content:'🔒';position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:24px;background:var(--bg);padding:0 8px}
+.pw h3{color:var(--gold2);font-size:15px;margin:6px 0}
+.pw .price{font-size:24px;color:var(--gold);font-weight:700;margin:5px 0}
+.qr-box{width:140px;height:140px;margin:10px auto;background:#fff;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#999;font-size:11px;flex-direction:column;gap:4px;cursor:pointer;overflow:hidden}
+.qr-box img{width:100%;height:100%;object-fit:contain}
+.ur{display:flex;gap:6px;margin-top:8px}
+.ur input{flex:1;padding:8px;background:#0c0c1a;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;text-align:center;outline:none;font-family:inherit}
+.ur button{padding:8px 16px;background:var(--gold);border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.locked{filter:blur(6px);pointer-events:none;user-select:none;opacity:0.3}
+.unlocked{filter:none;pointer-events:auto;user-select:auto;opacity:1}
+.dt{font-size:11px;line-height:2.2;color:#c0b8a8;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.dt strong{color:var(--gold2);display:block;margin-top:10px}
+.dt .hl{color:var(--gold)}
+.dt em{color:#c0a060;font-style:normal}
+.ft{text-align:center;padding:16px;font-size:9px;color:var(--dim)}
+@keyframes up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.rc{animation:up .5s ease forwards}
+</style>
+</head>
+<body>
+<div class="ct">
+<div class="hd"><div class="ic">☯</div><h1>数字人格分析</h1><p>手机号后四位 · 12型人格解读</p></div>
+
+<div class="cd" id="inputForm"><h2>📱 输入信息</h2>
+<div class="fg"><label>手机号后四位</label><div class="pi"><span>*******</span><input type="text" id="phoneDigits" placeholder="0000" maxlength="4" inputmode="numeric"></div></div>
+<div class="fg"><label>使用时长</label><select id="duration"><option value="">请选择</option><option value="0.5">半年以内</option><option value="1">1年</option><option value="2">2年</option><option value="3">3-5年</option><option value="5">5-10年</option><option value="10">10年以上</option></select></div>
+<div class="fg"><label>性别</label><select id="gender"><option value="">请选择</option><option value="male">男</option><option value="female">女</option></select></div>
+<div class="fg"><label>年龄</label><input type="number" id="age" placeholder="请输入年龄" min="10" max="100"></div>
+<div class="err" id="errorMsg"></div>
+<button class="btn" id="analyzeBtn">⚡ 开始分析</button>
+<div id="jsStatus" style="text-align:center;font-size:9px;color:#5a9a5a;margin-top:4px;display:none">✅ 系统就绪</div>
+</div>
+
+<div class="results" id="resultsSection"></div>
+<div class="ft"><p>基于数字能量结构分析 · 仅供娱乐参考</p></div>
+</div>
+
+<script>
+// ====== 第一层：数据映射 ======
+var E2N={'1':'金','2':'金','3':'火','4':'木','5':'木','6':'水','7':'土','8':'土','9':'金','0':'土'};
+var N2G={'1':'乾','2':'兑','3':'离','4':'震','5':'巽','6':'坎','7':'艮','8':'坤','9':'乾','0':'坤'};
+var G2E={乾:'金',兑:'金',离:'火',震:'木',巽:'木',坎:'水',艮:'土',坤:'土'};
+var DAYUN=[[10,20,'乾','金'],[20,30,'兑','金'],[30,40,'离','火'],[40,50,'震','木'],[50,60,'巽','木'],[60,70,'坎','水'],[70,80,'艮','土'],[80,99,'坤','土']];
+function getDayun(age){for(var i=0;i<DAYUN.length;i++)if(age>=DAYUN[i][0]&&age<DAYUN[i][1])return{name:DAYUN[i][2],el:DAYUN[i][3],range:[DAYUN[i][0],DAYUN[i][1]]};return age<10?{name:'乾',el:'金',range:[10,20]}:{name:'坤',el:'土',range:[80,90]}}
+var SHENG={木:'火',火:'土',土:'金',金:'水',水:'木'};
+var KE={金:'木',木:'土',土:'水',水:'火',火:'金'};
+function sheng(a,b){return SHENG[a]===b}
+function ke(a,b){return KE[a]===b}
+var DZ={0:'亥',1:'子',2:'丑',3:'寅',4:'卯',5:'辰',6:'巳',7:'午',8:'未',9:'申'};
+var TAO={子:1,卯:1,午:1,酉:1};
+var CK={丑:1,辰:1,未:1,戌:1};
+
+// ====== 第二层：号码解析 ======
+function parseNum(digits,age,gender,dur){
+  var d=digits.split(''),ec={金:0,木:0,水:0,火:0,土:0},gc={};
+  for(var i=0;i<4;i++){var el=E2N[d[i]],g=N2G[d[i]];ec[el]=(ec[el]||0)+1;gc[g]=(gc[g]||0)+1}
+  var domE='',dc=0;for(var e in ec)if(ec[e]>dc){domE=e;dc=ec[e]}
+  var domG=[];for(var g in gc)if(gc[g]>=2)domG.push(g);
+  var bal=100;for(var e in ec){if(ec[e]>=3)bal-=25;else if(ec[e]===0)bal-=10}if(dc>=4)bal=25;
+  var bz=(d[0]===d[1]&&d[1]===d[2]&&d[2]===d[3]);
+  var acc=false;for(var i=0;i<3;i++){var e1=E2N[d[i]],e2=E2N[d[i+1]];if((e1==='火'&&e2==='金')||(e1==='金'&&e2==='木'))acc=true}
+  var pal=[{n:'父母宫',dg:d[0],el:E2N[d[0]],g:N2G[d[0]],dz:DZ[d[0]]},{n:'夫妻宫',dg:d[1],el:E2N[d[1]],g:N2G[d[1]],dz:DZ[d[1]]},{n:'自身宫',dg:d[2],el:E2N[d[2]],g:N2G[d[2]],dz:DZ[d[2]]},{n:'子女宫',dg:d[3],el:E2N[d[3]],g:N2G[d[3]],dz:DZ[d[3]]}];
+  var self=pal[2],spEl=pal[1].el,selfEl=self.el;
+  var spR='';if(ke(spEl,selfEl))spR='ks';else if(ke(selfEl,spEl))spR='sk';else if(sheng(spEl,selfEl))spR='ss';else if(sheng(selfEl,spEl))spR='ss2';else spR='bh';
+  var dy=getDayun(age),dyR='';
+  if(sheng(dy.el,selfEl))dyR='ss';else if(ke(dy.el,selfEl))dyR='ks';else if(sheng(selfEl,dy.el))dyR='ss2';else if(ke(selfEl,dy.el))dyR='sk';else dyR='bh';
+  var ht=false,hc=false;for(var i=0;i<4;i++){if(TAO[DZ[d[i]]])ht=true;if(CK[DZ[d[i]]])hc=true}
+  var sq=false;for(var i=0;i<2;i++)if(Math.abs(parseInt(d[i+1])-parseInt(d[i]))===1)sq=true;
+  return{digits:d,ec:ec,gc:gc,domE:domE,domG:domG,bal:bal,bz:bz,acc:acc,pal:pal,self:self,spR:spR,dy:dy,dyR:dyR,ht:ht,hc:hc,sq:sq,age:age,gender:gender,dur:dur};
+}
+
+// ====== 第三层：12人格映射 ======
+var ARCHETYPES = {
+  P01:{name:'开拓领导者',sub:'掌控·执行·竞争·扩张',
+    ks:['掌控','执行','竞争','扩张'],
+    sw:['行动快、敢决策、有魄力','善于把握机会、推动事情落地','有天然的领导气场和号召力','在压力下反而表现更出色'],
+    wk:['固执己见、控制欲偏强','容易忽略他人感受和情绪','过于追求效率导致关系紧张','独断专行时容易决策失误'],
+    ct:['最大的优势是果断，最大的风险也是果断——一念成事，一念犯错。','执行力很强，但容易忽视情绪感受和团队氛围。'],
+    career:['年轻时容易与权威产生冲突','适合从执行岗位走向管理岗位','骨子里喜欢掌控工作节奏','创业或独立带队的概率较高','中后期容易带团队、做决策'],
+    wealth:['财富来自机会捕捉和果断下注','赚钱速度较快，但守财能力需加强','容易出现大起大落的财务波动','适合进攻型投资，但要设止损线','现金流管理是长期课题'],
+    love:['主动出击型，遇到喜欢的人不犹豫','关系初期热情高，后期需注意维护','容易吸引欣赏你魄力的人','需要学会在关系中适当示弱','过于主导会让对方感觉被压制'],
+    marry:['婚姻中需要一个能平衡你强势的人','家庭决策权在你手里，但要给对方空间','容易因为工作忽略家庭时间','适合找一个包容型伴侣','婚姻稳定后反而更懂得珍惜'],
+    health:['长期高强度容易导致心血管负担','注意头痛、骨骼关节问题','需要主动安排休息和放松时间','运动是好习惯但要防运动损伤','情绪管理的身体影响比较大'],
+    radar:[85,75,55,60,40,65]
+  },
+  P02:{name:'资源整合者',sub:'协调·稳定·积累·经营',
+    ks:['协调','稳定','积累','经营'],
+    sw:['人脉广、耐力强、善于整合','能把不同资源和人串到一起','在复杂局面中稳得住阵脚','做事不急于求成，后劲很足'],
+    wk:['偏保守、启动速度慢','容易错过需要快速反应的机会','过于求稳可能限制发展空间','对变化的适应需要预热时间'],
+    ct:['最大的优点是稳，最大的局限也是稳——稳住了底盘，但也可能错过了风口。'],
+    career:['事业属于后发型，越往后越出彩','资源会逐渐向你集中','适合长期经营型岗位或平台','不适合频繁跳槽和冒险创业','稳定积累比短期爆发更适合你'],
+    wealth:['财富来自长期积累和资源变现','擅长经营已有资产，让钱生钱','偏向稳健投资，不喜欢高杠杆','资金利用率较高，不乱花钱','收入增长曲线偏平但持续向上'],
+    love:['进入关系速度偏慢，需要时间了解','不轻易表达情绪但一旦认定就很专一','容易吸引务实、稳重型伴侣','关系中重视安全感和长期承诺','慢热是你的节奏，别勉强自己快'],
+    marry:['非常适合长期婚姻经营','家庭责任感强，是可靠的伴侣','婚姻节奏偏慢但基础打得扎实','注意别把稳定过成无聊','偶尔主动制造惊喜和仪式感'],
+    health:['注意脾胃和消化系统','长期久坐或缺乏运动的风险','保持适度运动习惯很重要','消化问题是常见隐患','规律作息比任何保健品都管用'],
+    radar:[65,80,60,70,75,60]
+  },
+  P03:{name:'谋略观察者',sub:'洞察·布局·思考·耐心',
+    ks:['洞察','布局','思考','耐心'],
+    sw:['分析能力强、看问题比别人深','善于布局和策划复杂局面','在不确定中也能保持冷静判断','有战略眼光，不纠结眼前得失'],
+    wk:['容易过度思考和犹豫不决','想太多导致行动力不足','有时候显得不够果断和直接','对人对事容易产生防备心理'],
+    ct:['最大的天赋是看透本质，最大的负担也是看太透——想太多反而动不了。'],
+    career:['适合需要深度思考和分析的岗位','咨询、策略、研究型工作如鱼得水','不宜做需要快速反应的一线角色','积累足够后会迎来爆发点','中后期适合做顾问或智囊'],
+    wealth:['擅长发现被低估的机会和价值','投资风格偏稳健和长期','不喜欢跟风，有自己的判断','赚钱节奏不快但胜在稳定','不适合高风险的短线操作'],
+    love:['感情上比较慢热和慎重','需要时间和观察才会打开心扉','容易吸引欣赏你深度的人','不善于甜言蜜语但行动真诚','过于理性可能让对方觉得冷淡'],
+    marry:['婚姻中需要找一个能理解你深度的人','不是浪漫型伴侣但是可靠型伴侣','沟通中需要注意多表达感受','婚姻稳定度较高','给伴侣多一点情绪反馈会更幸福'],
+    health:['注意肾脏、泌尿系统','思虑过多容易影响睡眠质量','需要学会"不想事"的放松方式','神经系统容易紧绷','适量运动有助于缓解精神疲劳'],
+    radar:[55,60,70,50,50,75]
+  },
+  P04:{name:'魅力传播者',sub:'表达·影响·热情·创意',
+    ks:['表达','影响','热情','创意'],
+    sw:['感染力强、能带动周围人情绪','表达能力和沟通能力突出','创意多、点子多、想法活跃','在人群中容易被注意到和记住'],
+    wk:['情绪波动较大、容易情绪化','热情来得快去得也快','有时候说话不过脑子容易伤人','表现欲过强可能让人感觉浮夸'],
+    ct:['最有感染力的时候也是你最不设防的时候——表达是天赋，控制分寸是功课。'],
+    career:['适合台前、表达、传播型工作','销售、讲师、媒体、创意方向很适合','表现力是你的核心竞争力','不适合长期做幕后或重复性工作','需要舞台来发挥你的影响力'],
+    wealth:['财富与曝光度和人脉正相关','适合靠影响力变现的赚钱方式','花钱比较随性，需要强制储蓄','赚钱机会多但也要学会筛选','不适合过于保守的理财方式'],
+    love:['桃花运比较活跃，不缺认识新人的机会','感情热度高，但维持温度需要功夫','容易吸引同样开朗外向型的人','关系中表达很重要但也需要倾听','热闹过后需要学会安静陪伴'],
+    marry:['婚姻需要找一个能接住你情绪的人','热情过后需要稳定来支撑关系','注意别把婚姻也当成展示舞台','伴侣可能需要你更多安静陪伴','成熟后的你会是很有魅力的伴侣'],
+    health:['注意心脏、眼睛、心血管','容易上火、失眠、情绪性暴食','学会管理情绪就是管理健康','嗓子、口腔也需要关注','规律作息对稳定情绪有帮助'],
+    radar:[60,65,80,80,55,50]
+  },
+  P05:{name:'稳健经营者',sub:'安全·责任·规划·稳定',
+    ks:['安全','责任','规划','稳定'],
+    sw:['做事踏实可靠、让人放心','有很强的责任心和规划能力','在稳定环境中能持续产出','善于管理现有的资源和事务'],
+    wk:['过于求稳可能错失良机','不喜欢变化和不确定性','有时候显得缺乏激情和冲劲','创新和突破的动力不足'],
+    ct:['最让人放心的是靠谱，最让自己受限的也是"太靠谱"——安全区待久了，外面的世界在变。'],
+    career:['适合需要稳定输出和责任心的工作','体制内、大公司、长期项目都合适','不适合风险过高或变动频繁的岗位','稳扎稳打型，晋升偏慢但很少掉队','中后期积累的优势会逐渐显现'],
+    wealth:['财富来自持续稳定的积累','非常适合长期定投型理财','不冒险、不跟风、不冲动消费','积累速度不快但很少倒退','守住财富的能力比赚钱的能力更强'],
+    love:['重视安全感和长期承诺','进入关系前会认真评估和考量','一旦确定关系就很专一和负责','容易吸引同样稳重可靠的伴侣','感情上不容易主动但一旦主动就很真诚'],
+    marry:['婚姻责任感强，是过日子的好伴侣','家庭财务和规划交给你很放心','关系稳定但不一定浪漫','需要主动给婚姻加点温度和惊喜','长期经营的婚姻会很幸福'],
+    health:['注意脾胃和消化系统','规律生活被打乱时身体容易出状况','适度运动有助于提升代谢','长期坐着办公注意腰椎颈椎','体检不能省，早发现早处理'],
+    radar:[50,75,55,60,80,55]
+  },
+  P06:{name:'创新探索者',sub:'好奇·突破·变化·学习',
+    ks:['好奇','突破','变化','学习'],
+    sw:['学习能力强、接受新事物快','不怕变化、能在动荡中找到机会','有创新意识和突破精神','思维活跃、不墨守成规'],
+    wk:['注意力容易分散、不够专注','对一件事的热情持续时间不长','变化太快导致执行不彻底','有时候缺乏耐心和持久力'],
+    ct:['最强的能力是快速迭代，最大的弱点是"太快"——还没深耕，已经换了下一片田。'],
+    career:['适合创新、科技、创业型领域','不适合重复性高或规则僵化的工作','经常换方向是常态不是缺点','多领域交叉反而能发挥优势','找到能包容你探索欲的平台很重要'],
+    wealth:['财富来源多样，不依赖单一收入','适合尝试副业和多元投资','但对财务规划缺乏耐心','容易在新鲜事物上冲动消费','建议设一个"不动本金"的账户'],
+    love:['感情中追求新鲜感和共同成长','不喜欢一成不变的关系模式','容易吸引同样有趣、爱探索的人','需要找一个能理解你变化节奏的人','关系中保持新鲜感是你的天赋'],
+    marry:['婚姻中需要足够自由度和空间','不适合被管得太紧的关系模式','稳定下来后会是很会生活的伴侣','找一个同样热爱生活的人很重要','学会在自由和责任间找平衡'],
+    health:['注意神经系统和肝胆','思虑过多+作息不规律是健康杀手','学会给自己设"休息日"','运动有助于释放多余精力','消化系统也容易受情绪影响'],
+    radar:[55,55,70,75,50,70]
+  },
+  P07:{name:'理性分析师',sub:'逻辑·数据·规律·推演',
+    ks:['逻辑','数据','规律','推演'],
+    sw:['逻辑思维缜密、善于分析和推理','能从大量信息中提取关键规律','做事有条理、讲证据','在专业领域能钻得很深'],
+    wk:['过于理性、缺少人情味','有时候显得冷漠和不近人情','对不确定性的容忍度低','过于依赖数据和逻辑可能忽略直觉'],
+    ct:['最精准的是逻辑，最不精准的也是逻辑——因为人心和世界，有时候不按逻辑走。'],
+    career:['适合技术、金融、法律、数据分析等专业岗位','不适合需要大量社交和感性判断的工作','专业深度是你的核心竞争力','在一个领域深耕比横向拓展更有效','成为某个领域的权威是自然路径'],
+    wealth:['擅长通过专业知识和分析赚钱','投资风格偏理性和数据驱动','不会被市场情绪带着走','但也可能错过一些"非理性"的机会','财务规划井井有条'],
+    love:['感情上偏理性，不容易被冲动左右','进入关系前会"分析"对方的匹配度','不擅长表达感性的情感','容易吸引欣赏你稳重和聪明的人','需要在理性和感性之间找平衡'],
+    marry:['婚姻中你是那个"定海神针"','家庭决策偏理性和务实','注意不要把所有事情都当成问题来解','偶尔的感性和浪漫会让关系更暖','找一个能带你走出"逻辑世界"的人'],
+    health:['注意呼吸系统和骨骼健康','长期伏案工作注意颈椎腰椎','用脑过度需要主动休息','饮食偏理性可能导致营养不均衡','运动需要规律化而非一时兴起'],
+    radar:[50,60,50,40,65,80]
+  },
+  P08:{name:'服务支持者',sub:'帮助·付出·包容·耐心',
+    ks:['帮助','付出','包容','耐心'],
+    sw:['有耐心、善解人意、会照顾人','为人低调但让人感觉很温暖','在团队中是润滑剂和稳定剂','做事细致，不争不抢但不可或缺'],
+    wk:['容易忽略自己的需求和边界','付出太多可能导致自己被消耗','不善于说"不"和争取利益','过于低调可能被忽视和低估'],
+    ct:['最能支持别人的人，往往最不会支持自己——你的包容是力量，但也要给自己留一点。'],
+    career:['适合服务、教育、医疗、后勤等支持型工作','在团队中是不可或缺的角色','不适合需要强势竞争和表现的环境','默默积累会获得信任和尊重','中后期会发现自己积累的人脉价值'],
+    wealth:['财富来源偏稳定和持续','擅长节约和精打细算','不适合高风险或投机型投资','帮别人理财比给自己理财更擅长','需要学会为自己的价值定价'],
+    love:['付出型恋人，对伴侣无微不至','关系中容易变成"单方面付出"','需要找一个懂得珍惜和回馈你的人','温柔体贴是最打动对方的特质','学会表达自己的需求也很重要'],
+    marry:['婚姻中是最体贴的伴侣之一','家庭和谐是你的优先追求','但不要把所有负担都扛在自己身上','需要找一个能和你一起经营的人','学会让对方也参与家庭责任'],
+    health:['注意内分泌和免疫系统','过度付出导致身心透支','学会拒绝和设立边界也是养生','情绪压抑容易转化成身体问题','定期给自己放个假放松一下'],
+    radar:[40,65,50,70,65,45]
+  },
+  P09:{name:'自由冒险家',sub:'体验·冒险·独立·挑战',
+    ks:['体验','冒险','独立','挑战'],
+    sw:['独立自主、不依赖他人','敢于挑战和尝试新事物','有冒险精神和探索欲望','不怕失败，有重来的勇气'],
+    wk:['过于独立导致合作困难','冒险精神有时候变成莽撞','对规则和约束的忍耐度低','容易因为冲动付出代价'],
+    ct:['最自由的时候最闪光，最自由的时候也最危险——冒险和莽撞之间，隔着一个"想"。'],
+    career:['不适合朝九晚五和规矩太多的岗位','创业、自由职业、项目制工作更适合','对束缚的容忍度很低','试错成本可能偏高但成长也快','找到能发挥你独立性的赛道很重要'],
+    wealth:['财富起伏较大，有大赚也有大亏','敢于下注是你的特色但要设底线','不适合需要长期锁定的理财方式','现金流宽裕时就得很注意储蓄','需要找一个稳健的人帮你管钱'],
+    love:['感情中追求自由和刺激','不喜欢被束缚和管太多','容易吸引同样独立和有趣的人','需要找一个能给你空间的人','新鲜感过后学会经营平淡是课题'],
+    marry:['婚姻不是你的天然舒适区','但如果遇到对的人会很精彩','需要找一个既独立又包容的伴侣','婚姻中保持适度自由很重要','学会在自由和责任中找平衡点'],
+    health:['注意骨骼、关节、运动损伤','冒险活动中的意外风险偏高','肾上腺素透支后需要恢复期','饮食不规律是常见问题','学会"慢下来"对身体很重要'],
+    radar:[70,50,45,80,35,55]
+  },
+  P10:{name:'工匠专家',sub:'专注·细节·深耕·专业',
+    ks:['专注','细节','深耕','专业'],
+    sw:['专注力强、做事精益求精','在专业领域能钻得极深','做事一丝不苟、追求品质','不浮躁、能坐得住冷板凳'],
+    wk:['过于追求完美导致效率降低','视野可能局限在自己领域内','灵活性不足、对变化适应慢','有时候显得固执和不好沟通'],
+    ct:['最大的优势是专注，最大的盲区也是专注——把一件事做到极致时，别忘了抬头看路。'],
+    career:['适合技术、手艺、专业服务等需要深耕的岗位','在细分领域成为专家是自然路径','不适合需要频繁换岗或广泛社交的工作','慢工出细活，不追求速度和数量','积累越久、价值越高'],
+    wealth:['财富来自专业能力和技术积累','赚钱速度不快但单价和溢价能力强','适合靠手艺和技术吃饭的路线','不擅长投机和短线操作','长期坚持一个方向会收获丰厚'],
+    love:['感情中专一和专注是最大优点','不轻易开始但一旦开始就很认真','对伴侣要求可能偏高','需要找一个欣赏你专注品质的人','关系中注意别太较真和小事计较'],
+    marry:['婚姻中是比较可靠的伴侣','对家庭认真负责但可能不够浪漫','专注工作的时候容易冷落伴侣','需要注意工作与家庭的平衡','找一个理解你专注性格的人很重要'],
+    health:['注意关节、眼睛、颈椎','长期重复动作导致的职业病','需要定期活动和拉伸','精神专注太久需要放松','饮食规律但可能营养不均衡'],
+    radar:[55,60,40,40,70,75]
+  },
+  P11:{name:'社交连接者',sub:'关系·圈层·资源·沟通',
+    ks:['关系','圈层','资源','沟通'],
+    sw:['社交能力强、人缘好、朋友多','善于连接不同的人和资源','沟通协调能力突出','在人群中如鱼得水'],
+    wk:['过度依赖外部认可和关系','有时候显得不够有原则和底线','关系太多导致精力分散','深度关系可能不如表面看起来多'],
+    ct:['认识的人最多，但真正能依靠的可能最少——广度够了，深度才是下一个功课。'],
+    career:['适合需要社交和资源对接的工作','销售、商务、公关、市场方向很适合','不适合需要长期独处和专注的岗位','人脉就是你最大的职业资产','学会筛选和维护高质量关系很重要'],
+    wealth:['财富与人脉和资源正相关','适合靠关系和圈子赚钱','财路广但不够集中和系统','花钱在社交上比较多','需要学会把关系变成可持续的收入'],
+    love:['桃花运旺盛，身边不缺追求者','选择多了反而容易犹豫不决','注意分辨真心和表面热情','找一个能深入交流的伴侣很重要','热闹过后需要真正的陪伴'],
+    marry:['婚姻中需要找一个能给你安定感的人','你的社交圈很大但家要很暖','注意别把婚姻也当成社交场','伴侣需要理解和包容你的社交需求','稳定下来后是很好的生活伙伴'],
+    health:['社交消耗精力，注意休息','应酬多导致饮食和作息不规律','注意肝脏和代谢系统','学会拒绝无效社交就是养生','偶尔独处有助于身心恢复'],
+    radar:[65,70,70,85,60,50]
+  },
+  P12:{name:'平衡调和者',sub:'协调·平衡·柔韧·适应',
+    ks:['协调','平衡','柔韧','适应'],
+    sw:['适应能力强、什么环境都能活','善于在不同力量间找到平衡','性格柔和但内心有韧性','能理解不同立场和观点'],
+    wk:['有时候显得缺乏立场和主见','过于追求平衡可能导致犹豫不决','在需要站队时容易两头不讨好','适应太强反而不知道该往哪走'],
+    ct:['最擅长的是适应任何人，最难的是做自己——你的柔韧是礼物，但别忘了自己的形状。'],
+    career:['适合需要协调和平衡能力的工作','中层管理、协调、项目推进都合适','什么类型的工作都能做','需要找到自己真正热爱的方向','弹性是你最大的职业资本'],
+    wealth:['财运波动不大、相对稳定','适合均衡配置的投资策略','不贪心、不冒进、也不保守','赚钱能力中等但很少大亏','财务安全感比财富最大化更重要'],
+    love:['感情中善于包容和适应对方','关系中容易变成"配合者"','需要找一个能看见你需求的人','温柔而坚韧是你的吸引力','学会表达自己的真实想法很重要'],
+    marry:['婚姻中善于调和家庭矛盾','是家庭中的"和平使者"','关系比较和谐稳定','但不要总是在迁就中失去自我','偶尔为自己争取一下不过分'],
+    health:['整体健康状况尚可','但容易因为忽略小问题而累积','注意保持运动和均衡饮食','情绪压抑比身体透支更需要关注','定期体检+健康管理意识要好'],
+    radar:[55,65,60,65,65,60]
+  }
+};
+
+// ====== 人格映射逻辑 ======
+function mapArchetype(comp){
+  var ec=comp.ec,gc=comp.gc,self=comp.self,domE=comp.domE,domG=comp.domG;
+
+  // 乾卦主导(1,9>=2) → P01
+  if(gc['乾']>=2 && ec['金']>=2) return 'P01';
+  // 兑卦主导(2>=2) → P11
+  if(gc['兑']>=2) return 'P11';
+  // 离卦主导(3>=2) → P04
+  if(gc['离']>=2 && ec['火']>=2) return 'P04';
+  // 震卦主导(4>=2) → P06 或 P09
+  if(gc['震']>=2) return ec['火']>=1?'P09':'P06';
+  // 巽卦主导(5>=2) → P06
+  if(gc['巽']>=2) return 'P06';
+  // 坎卦主导(6>=2) → P03
+  if(gc['坎']>=2) return 'P03';
+  // 艮卦主导(7>=2) → P10
+  if(gc['艮']>=2) return 'P10';
+  // 坤卦主导(8,0>=2)
+  if(gc['坤']>=2){
+    if(ec['土']>=3) return 'P02';
+    if(comp.bal>=70) return 'P08';
+    return 'P05';
+  }
+
+  // 按元素主导
+  if(domE==='金'){
+    if(ec['水']>=1) return 'P07';
+    return 'P01';
+  }
+  if(domE==='木'){
+    if(ec['火']>=2) return 'P09';
+    return 'P06';
+  }
+  if(domE==='水'){
+    if(ec['金']>=1) return 'P07';
+    return 'P03';
+  }
+  if(domE==='火'){
+    if(ec['木']>=1) return 'P06';
+    if(gc['兑']>=1||gc['离']>=1) return 'P04';
+    return 'P09';
+  }
+  if(domE==='土'){
+    if(ec['金']>=2) return 'P01';
+    if(comp.bal>=80) return 'P12';
+    if(ec['土']>=3) return 'P02';
+    return 'P05';
+  }
+
+  // 极度平衡 → P12
+  if(comp.bal>=85) return 'P12';
+
+  // 豹子号特殊处理
+  if(comp.bz){
+    if(domE==='金') return 'P01';
+    if(domE==='火') return 'P04';
+    if(domE==='水') return 'P03';
+    if(domE==='木') return 'P06';
+    return 'P05';
+  }
+
+  return 'P12'; // 兜底
+}
+
+// 获取副人格（次要卦象对应的人格）
+function subArchetype(comp){
+  var gc=comp.gc,domG=comp.domG;
+  var map={乾:'P01',兑:'P11',离:'P04',震:'P06',巽:'P06',坎:'P03',艮:'P10',坤:'P05'};
+  for(var g in gc){
+    if(gc[g]>=1 && domG.indexOf(g)<0 && map[g]) return map[g];
+  }
+  return null;
+}
+
+// ====== 第四层：生成报告 ======
+function generateReport(comp){
+  var pid=mapArchetype(comp);
+  var arch=ARCHETYPES[pid];
+  var sid=subArchetype(comp);
+  var sub=sid?ARCHETYPES[sid]:null;
+
+  // 大运匹配词
+  var dyMap={ss:'大运助力期',ks:'大运考验期',sk:'大运求财期',ss2:'大运耕耘期',bh:'大运平稳期'};
+  var dyLabel=dyMap[comp.dyR]||'大运平稳';
+
+  // 免费版简评（从库里随机挑，用号码hash固定）
+  var seed=parseInt(comp.digits.join(''),10);
+  var careerCB=arch.career; var c1=careerCB[seed%careerCB.length];
+  var wealthCB=arch.wealth; var w1=wealthCB[seed%wealthCB.length];
+  var loveCB=arch.love; var l1=loveCB[seed%loveCB.length];
+
+  return {
+    pid:pid, arch:arch, sub:sub,
+    comp:comp, dyLabel:dyLabel,
+    freeComments:[c1,w1,l1]
+  };
+}
+
+// ====== 第五层：UI ======
+var isUnlocked=false;
+
+function showError(m){var el=document.getElementById('errorMsg');el.textContent=m;el.style.display='block'}
+
+function startAnalysis(){
+  try{
+    var ds=document.getElementById('phoneDigits').value.trim();
+    var dur=document.getElementById('duration').value;
+    var gd=document.getElementById('gender').value;
+    var ag=parseInt(document.getElementById('age').value);
+
+    if(!/^\d{4}$/.test(ds)){showError('请输入4位数字');return}
+    if(!dur){showError('请选择使用时长');return}
+    if(!gd){showError('请选择性别');return}
+    if(!ag||isNaN(ag)||ag<10||ag>100){showError('请输入有效年龄');return}
+
+    try{isUnlocked=localStorage.getItem('npa_unlocked')==='true'}catch(e){isUnlocked=false}
+
+    var comp=parseNum(ds,ag,gd,parseFloat(dur));
+    var gen=generateReport(comp);
+    currentData=gen;
+    render(gen);
+    document.getElementById('resultsSection').style.display='block';
+    document.getElementById('resultsSection').scrollIntoView({behavior:'smooth'});
+  }catch(e){showError('出错: '+e.message);console.error(e)}
+}
+
+function radarSVG(scores){
+  var labels=['事业','财富','感情','人际','健康','专业'];
+  var cx=100,cy=100,r=80,levels=5;
+  var paths=[];
+  // 六边形背景
+  for(var l=1;l<=levels;l++){
+    var pts=[];
+    for(var i=0;i<6;i++){
+      var angle=Math.PI/2+Math.PI*2*i/6;
+      var lr=r*l/levels;
+      pts.push((cx+lr*Math.cos(angle)).toFixed(1)+','+(cy-lr*Math.sin(angle)).toFixed(1));
+    }
+    paths.push('<polygon points="'+pts.join(' ')+'" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"/>');
+  }
+  // 轴线
+  for(var i=0;i<6;i++){
+    var angle=Math.PI/2+Math.PI*2*i/6;
+    paths.push('<line x1="'+cx+'" y1="'+cy+'" x2="'+(cx+r*Math.cos(angle)).toFixed(1)+'" y2="'+(cy-r*Math.sin(angle)).toFixed(1)+'" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/>');
+  }
+  // 数据多边形
+  var dataPts=[];
+  for(var i=0;i<6;i++){
+    var angle=Math.PI/2+Math.PI*2*i/6;
+    var vr=scores[i]/100*r;
+    dataPts.push((cx+vr*Math.cos(angle)).toFixed(1)+','+(cy-vr*Math.sin(angle)).toFixed(1));
+  }
+  paths.push('<polygon points="'+dataPts.join(' ')+'" fill="rgba(201,160,64,0.2)" stroke="rgba(201,160,64,0.8)" stroke-width="1.5"/>');
+  // 数据点
+  for(var i=0;i<6;i++){
+    var angle=Math.PI/2+Math.PI*2*i/6;
+    var vr=scores[i]/100*r;
+    paths.push('<circle cx="'+(cx+vr*Math.cos(angle)).toFixed(1)+'" cy="'+(cy-vr*Math.sin(angle)).toFixed(1)+'" r="2.5" fill="#c9a040"/>');
+  }
+  // 标签
+  for(var i=0;i<6;i++){
+    var angle=Math.PI/2+Math.PI*2*i/6;
+    var lr=r+16;
+    var lx=cx+lr*Math.cos(angle),ly=cy-lr*Math.sin(angle);
+    var fs='10'; if(labels[i].length>2) fs='9';
+    paths.push('<text x="'+lx.toFixed(1)+'" y="'+(ly+4).toFixed(1)+'" text-anchor="middle" fill="#888478" font-size="'+fs+'">'+labels[i]+'</text>');
+  }
+  return '<svg viewBox="0 0 200 200" style="width:200px;height:200px">'+paths.join('')+'</svg>';
+}
+
+function render(gen){
+  var a=gen.arch,sub=gen.sub,c=gen.comp;
+  var html='';
+
+  // === 免费版 ===
+  html+='<div class="rc" style="text-align:center">';
+  html+='<div style="font-size:10px;color:var(--dim)">你的核心人格属于</div>';
+  html+='<div class="pname">'+a.name+'</div>';
+  html+='<div class="psub">'+a.sub+'</div>';
+  html+='<div class="pks">';
+  for(var i=0;i<a.ks.length;i++) html+='<span>'+a.ks[i]+'</span>';
+  html+='</div>';
+
+  // 雷达图
+  html+='<div class="radar-wrap">'+radarSVG(a.radar)+'</div>';
+
+  // 三句话
+  html+='<div style="text-align:left;margin-top:10px">';
+  html+='<div style="font-size:11px;color:var(--dim);margin-bottom:4px">📌 简要解读</div>';
+  html+='<ul class="comments">';
+  html+='<li>💼 事业：'+gen.freeComments[0]+'</li>';
+  html+='<li>💰 财富：'+gen.freeComments[1]+'</li>';
+  html+='<li>💕 感情：'+gen.freeComments[2]+'</li>';
+  html+='</ul>';
+  html+='</div>';
+
+  // 额外提示
+  html+='<div style="font-size:10px;color:var(--dim);margin-top:8px;text-align:left;">';
+  if(c.bz) html+='<span class="tag tw">豹子号·磁场极强</span> ';
+  if(c.acc) html+='<span class="tag tw">冲撞信号</span> ';
+  if(c.ht) html+='<span class="tag tb">桃花活跃</span> ';
+  if(c.hc) html+='<span class="tag tg">财库在线</span> ';
+  html+='<span class="tag tg">'+gen.dyLabel+'</span> ';
+  if(sub) html+='<span class="tag tb">副人格：'+sub.name+'</span>';
+  html+='</div>';
+  html+='</div>';
+
+  // === 付费墙 ===
+  html+='<div class="pw" id="paywall"><h3>🔓 解锁完整人格报告</h3>';
+  html+='<p style="font-size:10px;color:var(--dim);line-height:1.7">查看你的：深度人格分析 · 优势短板 · 矛盾特质 · 事业财富感情婚姻健康五大剧本 · 当前阶段建议</p>';
+  html+='<div class="price">¥9.9 <small>/ 次</small></div>';
+  html+='<div class="qr-box" id="qrBox"><span id="qrText">点击上传<br>微信收款码</span><img id="qrImg" style="display:none"></div>';
+  html+='<input type="file" id="qrUpload" accept="image/*" style="display:none">';
+  html+='<p style="font-size:9px;color:var(--dim)">支付后截图获取解锁码</p>';
+  html+='<div class="ur"><input type="text" id="unlockCode" placeholder="输入解锁码" maxlength="20"><button id="unlockBtn">解锁</button></div>';
+  html+='<p style="font-size:8px;color:var(--dim);margin-top:4px">演示码：<b>8888</b></p></div>';
+
+  // === 付费版（深度报告）===
+  html+='<div id="detailSection" class="'+(isUnlocked?'unlocked':'locked')+'">';
+
+  // 深度人格
+  html+='<div class="rc"><h3>🧠 深度人格分析</h3><div class="dt">';
+  html+='<strong>核心人格：'+a.name+'</strong>'+a.sub+'<br><br>';
+  html+='<strong>优势特质</strong>';
+  for(var i=0;i<a.sw.length;i++) html+='<br>· '+a.sw[i];
+  html+='<br><br><strong>成长空间</strong>';
+  for(var i=0;i<a.wk.length;i++) html+='<br>· '+a.wk[i];
+  html+='<br><br><strong>🔑 核心矛盾</strong><br>';
+  for(var i=0;i<a.ct.length;i++) html+='<em>'+a.ct[i]+'</em><br>';
+  if(sub) html+='<br><strong>副人格影响：</strong>你同时也带有<em>'+sub.name+'</em>（'+sub.sub+'）的特质。在特定场景下，'+sub.name+'的一面会显现——这让你的性格更加立体，也需要你在不同场合学会切换。';
+  html+='</div></div>';
+
+  // 事业剧本
+  html+='<div class="rc"><h3>💼 事业剧本</h3><div class="dt">';
+  for(var i=0;i<a.career.length;i++) html+='· '+a.career[i]+'<br>';
+  html+='<br><strong>当前阶段：</strong>'+gen.dyLabel+'。'+(c.dyR==='sk'?'适合主动出击，争取资源。':c.dyR==='ks'?'外部约束较多，宜稳守不宜冒进。':c.dyR==='ss'?'贵人在场，多走动多展示。':c.dyR==='ss2'?'耕耘期，付出多回报慢——坚持就是胜利。':'平稳发展，做好手头的事。');
+  html+='</div></div>';
+
+  // 财富剧本
+  html+='<div class="rc"><h3>💰 财富剧本</h3><div class="dt">';
+  for(var i=0;i<a.wealth.length;i++) html+='· '+a.wealth[i]+'<br>';
+  html+='<br><strong>当前财运：</strong>'+(c.dyR==='sk'?'大运利求财，三年里财运最亮的一段。':c.dyR==='ks'?'财路偏紧，守住现金流。':c.hc?'财库在线，有蓄财能力——保持存钱习惯。':'财运平稳，保持节奏。');
+  html+='</div></div>';
+
+  // 感情剧本
+  html+='<div class="rc"><h3>💕 感情剧本</h3><div class="dt">';
+  for(var i=0;i<a.love.length;i++) html+='· '+a.love[i]+'<br>';
+  html+='<br><strong>当前桃花：</strong>'+(c.ht?'桃花活跃，筛选比吸引重要。':'桃花不算旺，但质量比数量重要。')+' '+(c.spR==='ks'?'关系中注意沟通方式，冷战是最大的坑。':c.spR==='sk'?'你主导关系节奏——偶尔示弱效果更好。':c.spR==='ss'?'对方对你有滋养——记得感恩和回馈。':'关系平等自在——但也要保持新鲜感。');
+  html+='</div></div>';
+
+  // 婚姻剧本
+  html+='<div class="rc"><h3>💍 婚姻剧本</h3><div class="dt">';
+  for(var i=0;i<a.marry.length;i++) html+='· '+a.marry[i]+'<br>';
+  html+='<br><strong>婚姻基础：</strong>'+(c.spR==='bh'?'夫妻宫比合，关系平等——这是最好的婚姻地基。':c.spR==='ks'?'夫妻宫受克——需要建立吵架规则，不隔夜不翻旧账。':'婚姻需要双方用心经营——但你的底子不差，值得投入。');
+  html+='</div></div>';
+
+  // 健康剧本
+  html+='<div class="rc"><h3>🏥 健康剧本</h3><div class="dt">';
+  for(var i=0;i<a.health.length;i++) html+='· '+a.health[i]+'<br>';
+  if(c.acc) html+='<br><strong>⚠ 特别提醒：</strong>号码含冲撞组合（火克金或金克木），出行、驾车、运动时多加小心。';
+  html+='</div></div>';
+
+  // 总结
+  html+='<div class="rc" style="border-left:3px solid var(--gold)"><h3>📋 综合总结</h3><div class="dt">';
+  html+='你属于<strong>'+a.name+'</strong>——'+a.sub+'。<br><br>';
+  html+='你的核心优势在于'+a.sw[0]+'。同时需要留意的是'+a.wk[0]+'。<br><br>';
+  html+='<em>'+a.ct[0]+'</em><br><br>';
+  html+='当前处于<strong>'+gen.dyLabel+'</strong>，'+(c.dyR==='sk'||c.dyR==='ss'?'适合主动作为，抓住机会。':'适合稳扎稳打，厚积薄发。')+' 号码只是能量倾向——了解它，善用它，但不能依赖它。';
+  html+='</div></div>';
+
+  html+='</div>';
+
+  document.getElementById('resultsSection').innerHTML=html;
+  if(isUnlocked){var pw=document.getElementById('paywall');if(pw)pw.style.display='none'}
+}
+
+// ====== 事件 ======
+var currentData=null;
+
+document.addEventListener('DOMContentLoaded',function(){
+  document.getElementById('jsStatus').style.display='block';
+  try{isUnlocked=localStorage.getItem('npa_unlocked')==='true'}catch(e){}
+  var btn=document.getElementById('analyzeBtn');if(btn)btn.addEventListener('click',startAnalysis);
+  var pi=document.getElementById('phoneDigits');if(pi)pi.addEventListener('input',function(){this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)});
+  var rs=document.getElementById('resultsSection');
+  rs.addEventListener('click',function(e){
+    if(e.target.closest('#qrBox')){var u=document.getElementById('qrUpload');if(u)u.click()}
+    if(e.target.closest('#unlockBtn'))unlock();
+  });
+  rs.addEventListener('change',function(e){if(e.target.id==='qrUpload')handleQR(e)});
+});
+
+function handleQR(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){var i=document.getElementById('qrImg');i.src=ev.target.result;i.style.display='block';document.getElementById('qrText').style.display='none'};r.readAsDataURL(f)}
+function unlock(){var c=document.getElementById('unlockCode').value.trim();if(['8888','2026','6688'].indexOf(c)>=0){isUnlocked=true;try{localStorage.setItem('npa_unlocked','true')}catch(e){}var pw=document.getElementById('paywall');if(pw)pw.style.display='none';var ds=document.getElementById('detailSection');if(ds){ds.classList.remove('locked');ds.classList.add('unlocked')}}else{alert('解锁码错误。演示码：8888')}}
+window.onerror=function(m,url,line){var el=document.getElementById('errorMsg');el.innerHTML='⚠ '+m+' (行:'+line+')';el.style.display='block';return false};
+</script>
+</body>
+</html>
